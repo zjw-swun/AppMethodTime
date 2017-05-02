@@ -1,8 +1,10 @@
 apply plugin: 'groovy'
 
 dependencies {
-    compile gradleApi()//gradle sdk
-    compile localGroovy()//groovy sdk
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:2.2.0'
+    compile 'org.javassist:javassist:3.20.0-GA'
 }
 
 repositories {

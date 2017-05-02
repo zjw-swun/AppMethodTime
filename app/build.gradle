@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.branch.plugin.dellog'
-apply plugin: com.hc.second.SecondPlugin
+//apply plugin: 'com.branch.plugin.dellog'
+apply plugin: com.zjw.plugin.MyPlugin
 
 android {
     compileSdkVersion 25
