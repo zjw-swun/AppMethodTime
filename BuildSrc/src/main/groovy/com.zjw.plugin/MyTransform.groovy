@@ -49,15 +49,17 @@ class MyTransform extends Transform {
                 //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
 
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                MyInject.injectDir(directoryInput.file.absolutePath, "com" + File.separator + "zjw" + File.separator + "appmethodtime")
+                MyInject.injectDir(directoryInput.file.absolutePath,
+                        "com" + File.separator + "zjw" + File.separator + "appmethodtime",
+                        project.pluginsrc.cost)
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
                 // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
                 // 获取output目录
                 def dest = transformInvocation.outputProvider.getContentLocation(directoryInput.name,
                         directoryInput.contentTypes, directoryInput.scopes,
                         Format.DIRECTORY)
-                println("directoryInput.file =============" + directoryInput.file);
-                println("dest.name =============" + dest.name);
+                //println("directoryInput.file =============" + directoryInput.file);
+               // println("dest.name =============" + dest.name);
 
                 // 将input的目录复制到output指定目录
                 FileUtils.copyDirectory(directoryInput.file, dest)

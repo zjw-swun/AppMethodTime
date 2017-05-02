@@ -5,24 +5,29 @@ import javassist.*
 public class MyInject {
 
     private static ClassPool pool = ClassPool.getDefault()
+    //注意这里需要替换你的anroid.jar路径
     static String androidJar = "D:\\Application\\Android\\sdkUpDate\\platforms\\android-24\\android.jar"
     static String myPackageName = "com.zjw.appmethodtime";
     static String myCostTimeAnnotation = "@com.zjw.appmethodtime.CostTime";
+    static String CostTime = "CostTime";
 
-    public static void injectDir(String path, String packageName) {
+    public static void injectDir(String path, String packageName, boolean enabeCostTime) {
         pool.appendClassPath(path)
         // 以下为windows环境下你的相应android.jar路径
         pool.insertClassPath(androidJar)
+
+        println("enabeCostTime is " + enabeCostTime)
 
         File dir = new File(path)
         if (dir.isDirectory()) {
             dir.eachFileRecurse { File file ->
                 String filePath = file.absolutePath
-                //确保当前文件是class文件，并且不是系统自动生成的class文件
+                //确保当前文件是class文件，并且不是系统自动生成的class文件以及注解文件
                 if (filePath.endsWith(".class")
                         && !filePath.contains('R$')
                         && !filePath.contains('R.class')
                         && !filePath.contains("BuildConfig.class")
+                        && !filePath.contains("CostTime")
                 ) {
                     // 判断当前目录是否是在我们的应用包里面
                     int index = filePath.indexOf(packageName);
@@ -52,26 +57,15 @@ public class MyInject {
                         CtMethod[] methods = c.getDeclaredMethods();
                         for (CtMethod method : methods) {
                             println("method ====" + method.longName)
-
-                            //  println("${method.getAvailableAnnotations()[0]}".contains(myCostTimeAnnotation))
-                            //插入到函数第一句
-                            StringBuilder startInjectStr = new StringBuilder();
-                            startInjectStr.append("sStart = System.nanoTime();");
-                            print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
-                            method.insertBefore(startInjectStr.toString())
-
-                            //插入到函数最后一句
-                            StringBuilder endInjectStr = new StringBuilder();
-                            endInjectStr.append("sEnd = System.nanoTime();\n");
-                            endInjectStr.append("android.util.Log.e(\"AppMethodTime\",");
-                            // endInjectStr.append("android.util.Log.e(\"");
-                            // endInjectStr.append(TAG);
-                            //endInjectStr.append("\",");
-                            endInjectStr.append("\"" + method.longName + "\"");
-                            endInjectStr.append("+(sEnd - sStart)/1000000+\" (毫秒)\");");
-                            print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
-                            method.insertAfter(endInjectStr.toString(), true)
-
+                            if (enabeCostTime
+                                    && method.getAvailableAnnotations() != null
+                                    && method.getAvailableAnnotations().length >= 1
+                                    && "${method.getAvailableAnnotations()[0]}".contains(CostTime)
+                            ) {
+                                insertCostTimeCode(method)
+                            } else if (!enabeCostTime) {
+                                insertCostTimeCode(method)
+                            }
                         }//END   for (CtMethod method : methods)
                         c.writeFile(path)
                         c.detach()
@@ -79,6 +73,23 @@ public class MyInject {
                 }
             }
         }
+    }
+
+    private static void insertCostTimeCode(CtMethod method) {
+        //插入到函数第一句
+        StringBuilder startInjectStr = new StringBuilder();
+        startInjectStr.append("sStart = System.nanoTime();");
+        print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
+        method.insertBefore(startInjectStr.toString())
+
+        //插入到函数最后一句
+        StringBuilder endInjectStr = new StringBuilder();
+        endInjectStr.append("sEnd = System.nanoTime();\n");
+        endInjectStr.append("android.util.Log.e(\"AppMethodTime\",");
+        endInjectStr.append("\"" + method.longName + "\"");
+        endInjectStr.append("+(sEnd - sStart)/1000000+\" (毫秒)\");");
+        print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
+        method.insertAfter(endInjectStr.toString(), true)
     }
 
 
