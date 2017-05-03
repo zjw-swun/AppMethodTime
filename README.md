@@ -43,7 +43,7 @@ uploadArchives {
 
 核心就是MyTransform类，以及MyInject类
 MyInject类里面的代码如下
-···
+```
 package com.zjw.plugin
 
 import javassist.*
@@ -138,30 +138,30 @@ public class MyInject {
         method.insertAfter(endInjectStr.toString(), true)
     }
 }
-···
+```
 
 #3.  插件自定义的配置字段
-···
+```
 pluginsrc{
     message = 'hello gradle plugin'
     cost = true
 }
-···
+```
 在MyTransform类中
-···
+```
  MyInject.injectDir(directoryInput.file.absolutePath,
                         "com" + File.separator + "zjw" + File.separator + "appmethodtime",
                         project.pluginsrc.cost)
-···
+```
 使用了。如果你想在自定义插件中自己创建的task中在你的app编译生成apk前读取
-···
+```
 pluginsrc{
     message = 'hello gradle plugin'
     cost = true
 }
-···
+```
 cost 等字段值的话，你得加上
-··preBuild.dependsOn appPlugin··
+``preBuild.dependsOn appPlugin``
 
  不说了自定义插件的初级知识应该都在这里了
 效果图
@@ -172,6 +172,3 @@ cost 等字段值的话，你得加上
 
 
 4. 代码只是demo阶段，只是练手，大神勿喷
-
-
-
