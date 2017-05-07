@@ -140,7 +140,7 @@ public class MyInject {
 }
 ```
 
-#3.  插件自定义的配置字段
+#2.  插件自定义的配置字段
 ```
 pluginsrc{
     message = 'hello gradle plugin'
@@ -171,4 +171,4 @@ cost 等字段值的话，你得加上
 
 
 
-4. 代码只是demo阶段，只是练手，大神勿喷
+# 3.代码只是demo阶段，只是练手，大神勿喷

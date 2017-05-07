@@ -43,7 +43,7 @@ public class MyInject {
                         }
                         pool.importPackage(myPackageName)
 
-                        //给类添加计时变量
+                       /* //给类添加计时变量
                         CtField startTime = new CtField(CtClass.longType, "sStart", c);
                         startTime.setModifiers(Modifier.STATIC);
                         c.addField(startTime);
@@ -52,7 +52,7 @@ public class MyInject {
                         CtField endTime = new CtField(CtClass.longType, "sEnd", c);
                         endTime.setModifiers(Modifier.STATIC);
                         c.addField(endTime);
-
+*/
                         //遍历类的所有方法
                         CtMethod[] methods = c.getDeclaredMethods();
                         for (CtMethod method : methods) {
@@ -62,9 +62,11 @@ public class MyInject {
                                     && method.getAvailableAnnotations().length >= 1
                                     && "${method.getAvailableAnnotations()[0]}".contains(CostTime)
                             ) {
-                                insertCostTimeCode(method)
+                                insertCostTimeCode(method,c)
+                                println("enabeCostTime true ")
                             } else if (!enabeCostTime) {
-                                insertCostTimeCode(method)
+                                println("enabeCostTime false ")
+                                insertCostTimeCode(method,c)
                             }
                         }//END   for (CtMethod method : methods)
                         c.writeFile(path)
@@ -75,21 +77,38 @@ public class MyInject {
         }
     }
 
-    private static void insertCostTimeCode(CtMethod method) {
+    private static void insertCostTimeCode(CtMethod method,CtClass c) {
+        method.addLocalVariable("sStart",CtClass.longType);
+        method.addLocalVariable("sEnd",CtClass.longType);
+
+        def StringType = pool.getCtClass("java.lang.String");
+        method.addLocalVariable("fullClassName",StringType);
+        method.addLocalVariable("className",StringType);
+        method.addLocalVariable("methodName",StringType);
+        method.addLocalVariable("lineNumber",CtClass.intType);
+        method.addLocalVariable("info",StringType);
+
+        def lineNumber = method.methodInfo.getLineNumber(0);
         //插入到函数第一句
         StringBuilder startInjectStr = new StringBuilder();
-        startInjectStr.append("sStart = System.nanoTime();");
+        startInjectStr.append(" sStart = System.nanoTime();\n");
+        startInjectStr.append(" fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
+        startInjectStr.append(" className = fullClassName.substring(fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
+        startInjectStr.append(" methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
+        //startInjectStr.append(" lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();\n");
+        startInjectStr.append(" lineNumber = "+lineNumber+";\n");
+        startInjectStr.append(" info = methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
         print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
         method.insertBefore(startInjectStr.toString())
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
-        endInjectStr.append("sEnd = System.nanoTime();\n");
+        endInjectStr.append(" sEnd = System.nanoTime();\n");
         endInjectStr.append("android.util.Log.e(\"AppMethodTime\",");
-        endInjectStr.append("\"" + method.longName + "\"");
-        endInjectStr.append("+(sEnd - sStart)/1000000+\" (毫秒)\");");
+        endInjectStr.append("info + \": \" ");
+        endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)\");");
         print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
-        method.insertAfter(endInjectStr.toString(), true)
+        method.insertAfter(endInjectStr.toString())
     }
 
 
