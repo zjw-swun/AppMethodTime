@@ -10,6 +10,10 @@ public class MyInject {
     static String myPackageName = "com.zjw.appmethodtime";
     static String myCostTimeAnnotation = "@com.zjw.appmethodtime.CostTime";
     static String CostTime = "CostTime";
+    static String AppMethodTime = "AppMethodTime";
+    static String AppMethodOrder = "AppMethodOrder";
+    static String LogLevel = "e";
+
 
     public static void injectDir(String path, String packageName, boolean enabeCostTime) {
         pool.appendClassPath(path)
@@ -98,13 +102,17 @@ public class MyInject {
         //startInjectStr.append(" lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();\n");
         startInjectStr.append(" lineNumber = "+lineNumber+";\n");
         startInjectStr.append(" info = methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
+
+        startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
+        startInjectStr.append("info + \": \" ");
+        startInjectStr.append("\"\"); ");
         print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
         method.insertBefore(startInjectStr.toString())
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
         endInjectStr.append(" sEnd = System.nanoTime();\n");
-        endInjectStr.append("android.util.Log.e(\"AppMethodTime\",");
+        endInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
         endInjectStr.append("info + \": \" ");
         endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)\");");
         print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
