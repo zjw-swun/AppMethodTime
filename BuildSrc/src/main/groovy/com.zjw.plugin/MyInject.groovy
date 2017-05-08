@@ -14,11 +14,31 @@ public class MyInject {
     static String AppMethodOrder = "AppMethodOrder";
     static String LogLevel = "e";
 
+    // 存储文件列表
+    private static ArrayList<String> fileList = new ArrayList<>();
 
-    public static void injectDir(String path, String packageName, boolean enabeCostTime) {
+
+    public static void injectDir(String path,String jarsPath, String packageName, boolean enabeCostTime) {
+        //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         pool.appendClassPath(path)
         // 以下为windows环境下你的相应android.jar路径
         pool.insertClassPath(androidJar)
+        //因为com.zjw.mylibrary.Bean 是lib库的代码 class只会在该目录下 编译顺序：先编译lib库再编译主项目
+        //不加以下代码 当javasist插入到 public void onEventMain(Bean event)该方法时找不到 Bean类
+        //原因就是path 和 androidJar 路径下找不到第三方和本地库中所引用的类
+
+        //加载第三方和本地库的jar
+        File libJarDir = new File(jarsPath)
+        try {
+            if (libJarDir.exists() && libJarDir.isDirectory()) {
+                ArrayList<String> arr = getFile(libJarDir);
+                for (String a : arr) {
+                    pool.appendClassPath(a);
+                }
+            }
+        }catch (Exception e){
+
+        }
 
         println("enabeCostTime is " + enabeCostTime)
 
@@ -82,6 +102,8 @@ public class MyInject {
     }
 
     private static void insertCostTimeCode(CtMethod method,CtClass c) {
+        println("insertCostTimeCode  method "+method.longName)
+
         method.addLocalVariable("sStart",CtClass.longType);
         method.addLocalVariable("sEnd",CtClass.longType);
 
@@ -106,8 +128,8 @@ public class MyInject {
         startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
         startInjectStr.append("info + \": \" ");
         startInjectStr.append("\"\"); ");
-        print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
         method.insertBefore(startInjectStr.toString())
+        print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
@@ -115,9 +137,23 @@ public class MyInject {
         endInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
         endInjectStr.append("info + \": \" ");
         endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)\");");
-        print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
         method.insertAfter(endInjectStr.toString())
+        print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
     }
 
+
+    private static ArrayList<String> getFile(File path) throws IOException {
+        File[] listFile = path.listFiles();
+        for (File a : listFile) {
+            if (a.isDirectory()) {
+                // 递归调用getFile()方法
+                getFile(new File(a.getAbsolutePath()));
+            } else if (a.isFile() && a.absolutePath.endsWith(".jar")) {
+                this.fileList.add(a.getAbsolutePath());
+            }
+        }
+        return fileList;
+
+    }
 
 }

@@ -9,11 +9,13 @@
 
     <Button
         android:id="@+id/tv"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="点 我 !"
         android:textSize="20sp"
         android:onClick="onClick"
+        android:drawablePadding="20dp"
+        android:drawableLeft="@mipmap/ic_launcher_round"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
