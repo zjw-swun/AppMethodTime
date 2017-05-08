@@ -101,7 +101,7 @@ public class MyInject {
         startInjectStr.append(" methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
         //startInjectStr.append(" lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();\n");
         startInjectStr.append(" lineNumber = "+lineNumber+";\n");
-        startInjectStr.append(" info = methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
+        startInjectStr.append(" info = fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
 
         startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
         startInjectStr.append("info + \": \" ");
