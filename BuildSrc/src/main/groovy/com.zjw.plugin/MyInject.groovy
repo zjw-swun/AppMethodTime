@@ -81,6 +81,10 @@ public class MyInject {
                         CtMethod[] methods = c.getDeclaredMethods();
                         for (CtMethod method : methods) {
                             println("method ====" + method.longName)
+                            if(method.isEmpty()){
+                                //空函数体有可能是抽象函数以及接口函数
+                                return
+                            }
                             if (enabeCostTime
                                     && method.getAvailableAnnotations() != null
                                     && method.getAvailableAnnotations().length >= 1
