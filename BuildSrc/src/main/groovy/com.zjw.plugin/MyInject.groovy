@@ -1,6 +1,8 @@
 package com.zjw.plugin
 
 import javassist.*
+import javassist.bytecode.CodeAttribute
+import javassist.bytecode.LocalVariableAttribute
 
 public class MyInject {
 
@@ -61,22 +63,11 @@ public class MyInject {
                         String className = filePath.substring(index, end).replace('\\', '.').replace('/', '.')
                         //开始修改class文件
                         CtClass c = pool.getCtClass(className)
-
                         if (c.isFrozen()) {
                             c.defrost()
                         }
                         pool.importPackage(myPackageName)
-
-                       /* //给类添加计时变量
-                        CtField startTime = new CtField(CtClass.longType, "sStart", c);
-                        startTime.setModifiers(Modifier.STATIC);
-                        c.addField(startTime);
-
-                        //给类添加计时变量
-                        CtField endTime = new CtField(CtClass.longType, "sEnd", c);
-                        endTime.setModifiers(Modifier.STATIC);
-                        c.addField(endTime);
-*/
+                        //c.getMethod("setDname", "(Ljava/lang/String;)V") 指定函数名和参数获取函数对象
                         //遍历类的所有方法
                         CtMethod[] methods = c.getDeclaredMethods();
                         for (CtMethod method : methods) {
@@ -125,24 +116,45 @@ public class MyInject {
         startInjectStr.append(" fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
         startInjectStr.append(" className = fullClassName.substring(fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
         startInjectStr.append(" methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
-        //startInjectStr.append(" lineNumber = Thread.currentThread().getStackTrace()[2].getLineNumber();\n");
         startInjectStr.append(" lineNumber = "+lineNumber+";\n");
         startInjectStr.append(" info = fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
-
         startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
         startInjectStr.append("info + \": \" ");
         startInjectStr.append("\"\"); ");
         method.insertBefore(startInjectStr.toString())
-        print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
+      //  print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
 
+        //获取方法参数名称
+        CodeAttribute codeAttribute = method.methodInfo.getCodeAttribute();
+        LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute
+                .getAttribute(LocalVariableAttribute.tag);
+        String[] paramNames = new String[method.getParameterTypes().length];
+        int pos = Modifier.isStatic(method.getModifiers()) ? 0 : 1;
+
+
+        ArrayList<String> paramNameList = new ArrayList<>();
+        ArrayList<String> paramValueList = new ArrayList<>();
+        for (int i = 0; i < paramNames.length; i++) {
+            paramNames[i] = attr.variableName( i + pos);
+            println("attr.variableName( i + pos) is "+attr.variableName( i + pos))
+            paramNameList.add(attr.variableName( i + pos));
+            paramValueList.add("\$args["+i+"]");
+        }
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
         endInjectStr.append(" sEnd = System.nanoTime();\n");
         endInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
         endInjectStr.append("info + \": \" ");
-        endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)\");");
+        //endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)  return is \"+\$_);");
+        endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
+        // "${paramNameList.get(i)}:${paramValueList.get(i)}"
+        for (int i = 0; i < paramNameList.size(); i++){
+            endInjectStr.append(" <${paramNameList.get(i)}: \"+\$"+(i+1)+"+\"> ");
+        }
+        endInjectStr.append(" \"); ");
         method.insertAfter(endInjectStr.toString())
         print("方法最后一句插入了：" + endInjectStr.toString() + "语句\n")
+
     }
 
 

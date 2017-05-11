@@ -1,66 +1,44 @@
 package com.zjw.appmethodtime;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.zjw.mylibrary.Bean;
-import com.zjw.mylibrary.LibActivity;
+import java.util.ArrayList;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import static com.zjw.appmethodtime.R.id.tv;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     protected Button mTv;
+    protected MyListView mListView;
+    private MyAdapter mMyAdapter;
+    private ArrayList<String> mArrayList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_main);
         initView();
-        EventBus.getDefault().register(this);
-    }
-
-    public void onClick(View v) {
-        if (v.getId() == tv) {
-            sayHello();
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMain(EventBus event){
-        Toast.makeText(this, "onEventMain!", Toast.LENGTH_SHORT).show();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMain(Bean event){
-        Toast.makeText(this, "onEventMain!", Toast.LENGTH_SHORT).show();
-    }
-
-    @CostTime
-    public void sayHello() {
-        Toast.makeText(this, "Hello!", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent();
-        intent.setClass(MainActivity.this,LibActivity.class);
-        startActivity(intent);
-        EventBus.getDefault().post(new Bean());
     }
 
     private void initView() {
-        mTv = (Button) findViewById(R.id.tv);
+        mListView = (MyListView) findViewById(R.id.list_view);
+        mArrayList = new ArrayList<String>();
+        mMyAdapter = new MyAdapter(mArrayList, this);
+        for (int i = 0; i < 50; i++) {
+            mArrayList.add("" + i);
+        }
+        mListView.setAdapter(mMyAdapter);
+        mMyAdapter = new MyAdapter(mArrayList, this);
+        for (int i = 0; i < 50; i++) {
+            mArrayList.add("" + i);
+        }
+        mListView.setOnItemClickListener(this);
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
     }
 }
