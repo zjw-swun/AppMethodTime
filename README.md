@@ -140,7 +140,7 @@ public class MyInject {
 }
 ```
 
-# 2.  插件自定义的配置字段
+#2.  插件自定义的配置字段
 ```
 pluginsrc{
     message = 'hello gradle plugin'
@@ -166,6 +166,5 @@ cost 等字段值的话，你得加上
  不说了自定义插件的初级知识应该都在这里了
 效果图
 
-
-![QQ图片20170502234142.png](http://upload-images.jianshu.io/upload_images/1857887-9b8a3faf957097c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
+![QQ图片20170512022507.png](http://upload-images.jianshu.io/upload_images/1857887-66422b07a91a9485.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+说明：如果函数返回类型是void log中对应`` return is null ``
