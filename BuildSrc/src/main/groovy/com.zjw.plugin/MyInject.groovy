@@ -20,7 +20,7 @@ public class MyInject {
     private static ArrayList<String> fileList = new ArrayList<>();
 
 
-    public static void injectDir(String path,String jarsPath, String packageName, boolean enabeCostTime) {
+    public static void injectDir(String path, String jarsPath, String packageName, boolean enabeCostTime) {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         pool.appendClassPath(path)
         // 以下为windows环境下你的相应android.jar路径
@@ -38,7 +38,7 @@ public class MyInject {
                     pool.appendClassPath(a);
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -70,7 +70,7 @@ public class MyInject {
                         CtMethod[] methods = c.getDeclaredMethods();
                         for (CtMethod method : methods) {
                             println("method ====" + method.longName)
-                            if(method.isEmpty()){
+                            if (method.isEmpty()) {
                                 //空函数体有可能是抽象函数以及接口函数
                                 return
                             }
@@ -79,11 +79,11 @@ public class MyInject {
                                     && method.getAvailableAnnotations().length >= 1
                                     && "${method.getAvailableAnnotations()[0]}".contains(CostTime)
                             ) {
-                                insertCostTimeCode(method,c)
+                                insertCostTimeCode(method, c)
                                 println("enabeCostTime true ")
                             } else if (!enabeCostTime) {
                                 println("enabeCostTime false ")
-                                insertCostTimeCode(method,c)
+                                insertCostTimeCode(method, c)
                             }
                         }//END   for (CtMethod method : methods)
                         c.writeFile(path)
@@ -94,18 +94,18 @@ public class MyInject {
         }
     }
 
-    private static void insertCostTimeCode(CtMethod method,CtClass c) {
-        println("insertCostTimeCode  method "+method.longName)
+    private static void insertCostTimeCode(CtMethod method, CtClass c) {
+        println("insertCostTimeCode  method " + method.longName)
 
-        method.addLocalVariable("sStart",CtClass.longType);
-        method.addLocalVariable("sEnd",CtClass.longType);
+        method.addLocalVariable("sStart", CtClass.longType);
+        method.addLocalVariable("sEnd", CtClass.longType);
 
         def StringType = pool.getCtClass("java.lang.String");
-        method.addLocalVariable("fullClassName",StringType);
-        method.addLocalVariable("className",StringType);
-        method.addLocalVariable("methodName",StringType);
-        method.addLocalVariable("lineNumber",CtClass.intType);
-        method.addLocalVariable("info",StringType);
+        method.addLocalVariable("fullClassName", StringType);
+        method.addLocalVariable("className", StringType);
+        method.addLocalVariable("methodName", StringType);
+        method.addLocalVariable("lineNumber", CtClass.intType);
+        method.addLocalVariable("info", StringType);
 
         def lineNumber = method.methodInfo.getLineNumber(0);
         //插入到函数第一句
@@ -114,13 +114,13 @@ public class MyInject {
         startInjectStr.append(" fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
         startInjectStr.append(" className = fullClassName.substring(fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
         startInjectStr.append(" methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
-        startInjectStr.append(" lineNumber = "+lineNumber+";\n");
+        startInjectStr.append(" lineNumber = " + lineNumber + ";\n");
         startInjectStr.append(" info =\"===\"+sStart+\"===  \"+ fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
         startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
         startInjectStr.append("info + \": \" ");
         startInjectStr.append("\"\"); ");
         method.insertBefore(startInjectStr.toString())
-      //  print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
+        //  print("方法第一句插入了：" + startInjectStr.toString() + "语句\n")
 
         //获取方法参数名称
         CodeAttribute codeAttribute = method.methodInfo.getCodeAttribute();
@@ -132,8 +132,8 @@ public class MyInject {
 
         ArrayList<String> paramNameList = new ArrayList<>();
         for (int i = 0; i < paramNames.length; i++) {
-            paramNames[i] = attr.variableName( i + pos);
-            paramNameList.add(attr.variableName( i + pos));
+            paramNames[i] = attr.variableName(i + pos);
+            paramNameList.add(attr.variableName(i + pos));
         }
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
@@ -141,8 +141,8 @@ public class MyInject {
         endInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
         endInjectStr.append("info + \": \" ");
         endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
-        for (int i = 0; i < paramNameList.size(); i++){
-            endInjectStr.append(" <${paramNameList.get(i)}: \"+\$"+(i+1)+"+\"> ");
+        for (int i = 0; i < paramNameList.size(); i++) {
+            endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
         }
         endInjectStr.append(" \"); ");
         method.insertAfter(endInjectStr.toString())

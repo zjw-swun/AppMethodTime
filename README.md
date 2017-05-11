@@ -140,7 +140,7 @@ public class MyInject {
 }
 ```
 
-#2.  插件自定义的配置字段
+# 2.  插件自定义的配置字段
 ```
 pluginsrc{
     message = 'hello gradle plugin'
@@ -169,6 +169,3 @@ cost 等字段值的话，你得加上
 
 ![QQ图片20170502234142.png](http://upload-images.jianshu.io/upload_images/1857887-9b8a3faf957097c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-
-
-# 3.代码只是demo阶段，只是练手，大神勿喷
