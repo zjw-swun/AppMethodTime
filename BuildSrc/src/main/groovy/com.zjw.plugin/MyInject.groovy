@@ -42,8 +42,6 @@ public class MyInject {
 
         }
 
-        println("enabeCostTime is " + enabeCostTime)
-
         File dir = new File(path)
         if (dir.isDirectory()) {
             dir.eachFileRecurse { File file ->
@@ -117,7 +115,7 @@ public class MyInject {
         startInjectStr.append(" className = fullClassName.substring(fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
         startInjectStr.append(" methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
         startInjectStr.append(" lineNumber = "+lineNumber+";\n");
-        startInjectStr.append(" info = fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
+        startInjectStr.append(" info =\"===\"+sStart+\"===  \"+ fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
         startInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
         startInjectStr.append("info + \": \" ");
         startInjectStr.append("\"\"); ");
@@ -133,21 +131,16 @@ public class MyInject {
 
 
         ArrayList<String> paramNameList = new ArrayList<>();
-        ArrayList<String> paramValueList = new ArrayList<>();
         for (int i = 0; i < paramNames.length; i++) {
             paramNames[i] = attr.variableName( i + pos);
-            println("attr.variableName( i + pos) is "+attr.variableName( i + pos))
             paramNameList.add(attr.variableName( i + pos));
-            paramValueList.add("\$args["+i+"]");
         }
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
         endInjectStr.append(" sEnd = System.nanoTime();\n");
         endInjectStr.append("android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
         endInjectStr.append("info + \": \" ");
-        //endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒)  return is \"+\$_);");
         endInjectStr.append("+(sEnd - sStart)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
-        // "${paramNameList.get(i)}:${paramValueList.get(i)}"
         for (int i = 0; i < paramNameList.size(); i++){
             endInjectStr.append(" <${paramNameList.get(i)}: \"+\$"+(i+1)+"+\"> ");
         }

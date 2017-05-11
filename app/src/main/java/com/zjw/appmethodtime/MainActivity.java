@@ -2,6 +2,7 @@ package com.zjw.appmethodtime;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         initView();
     }
 
+    @CostTime
     private void initView() {
         mListView = (MyListView) findViewById(R.id.list_view);
         mArrayList = new ArrayList<String>();
@@ -37,8 +39,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mListView.setOnItemClickListener(this);
     }
 
-    @Override
+    @CostTime
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+     Log.e("TAG","123");
     }
 }

@@ -41,7 +41,7 @@ dependencies {
 
 pluginsrc{
     message = 'hello gradle plugin'
-    cost = false
+    cost = true
 }
 
 //preBuild.dependsOn appPlugin
