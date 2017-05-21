@@ -1,18 +1,30 @@
-apply plugin: 'com.android.application'
-//apply plugin: 'com.branch.plugin.dellog'
-apply plugin: com.zjw.plugin.MyPlugin
-apply plugin: 'com.neenbedankt.android-apt'
 
+project.extensions.add("isBuildModule",false)
+
+def isBuildModule = project.extensions.getByName("isBuildModule")
+
+println("isBuildModule is "+isBuildModule)
+
+if(isBuildModule){
+    apply plugin: 'com.android.application'
+}else{
+    apply plugin: 'com.android.library'
+}
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
+
     defaultConfig {
-        applicationId "com.zjw.appmethodtime"
+        if(isBuildModule) {
+            applicationId "com.zjw.myapplication"
+        }
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -20,12 +32,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-}
-apt {
-    arguments {
-        eventBusIndex "org.greenrobot.eventbusperf.MyEventBusIndex"
+
+    sourceSets {
+        main {
+           if (isBuildModule) {
+            manifest.srcFile 'src/main/debug/AndroidManifest.xml'
+            } else {
+               manifest.srcFile 'src/main/release/AndroidManifest.xml'
+            }
+        }
     }
 }
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -34,15 +52,4 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-    compile 'org.greenrobot:eventbus:3.0.0'
-    compile project(path: ':mylibrary')
-    compile project(path: ':myapplication')
 }
-
-
-pluginsrc{
-    message = 'hello gradle plugin'
-    cost = true
-}
-
-//preBuild.dependsOn appPlugin

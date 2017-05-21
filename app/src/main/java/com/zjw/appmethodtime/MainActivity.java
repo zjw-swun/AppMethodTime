@@ -1,11 +1,13 @@
 package com.zjw.appmethodtime;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+
+import com.zjw.myapplication.MyLibActivity;
 
 import java.util.ArrayList;
 
@@ -32,15 +34,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             mArrayList.add("" + i);
         }
         mListView.setAdapter(mMyAdapter);
-        mMyAdapter = new MyAdapter(mArrayList, this);
-        for (int i = 0; i < 50; i++) {
-            mArrayList.add("" + i);
-        }
         mListView.setOnItemClickListener(this);
     }
 
     @CostTime
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-     Log.e("TAG","123");
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, MyLibActivity.class);
+        startActivity(intent);
     }
 }
