@@ -7,9 +7,12 @@
     android:layout_height="match_parent"
     tools:context="com.zjw.myapplication.MyLibActivity">
 
-    <TextView
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/location_selector"
+        android:gravity="center"
+        android:clickable="true"
         android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

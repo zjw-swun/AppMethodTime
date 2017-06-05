@@ -1,13 +1,11 @@
-
-project.extensions.add("isBuildModule",false)
-
+project.extensions.add("isBuildModule", false)
 def isBuildModule = project.extensions.getByName("isBuildModule")
 
-println("isBuildModule is "+isBuildModule)
+println("isBuildModule is " + isBuildModule)
 
-if(isBuildModule){
+if (isBuildModule) {
     apply plugin: 'com.android.application'
-}else{
+} else {
     apply plugin: 'com.android.library'
 }
 android {
@@ -15,7 +13,7 @@ android {
     buildToolsVersion "25.0.2"
 
     defaultConfig {
-        if(isBuildModule) {
+        if (isBuildModule) {
             applicationId "com.zjw.myapplication"
         }
         minSdkVersion 14
@@ -35,10 +33,10 @@ android {
 
     sourceSets {
         main {
-           if (isBuildModule) {
-            manifest.srcFile 'src/main/debug/AndroidManifest.xml'
+            if (isBuildModule) {
+                manifest.srcFile 'src/main/debug/AndroidManifest.xml'
             } else {
-               manifest.srcFile 'src/main/release/AndroidManifest.xml'
+                manifest.srcFile 'src/main/release/AndroidManifest.xml'
             }
         }
     }
@@ -53,3 +51,4 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
 }
+

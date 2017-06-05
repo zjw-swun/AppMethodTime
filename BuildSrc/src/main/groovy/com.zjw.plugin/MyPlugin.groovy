@@ -7,9 +7,9 @@ import org.gradle.api.Project
 public class MyPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        println "我是自定义插件MyPlugin"
 
-        project.extensions.create('pluginsrc', MyCustomPluginExtension)
+        //注册build.gradle中
+        project.extensions.create('AppMethodTime', MyCustomPluginExtension)
 
       /*  project.task('appPlugin') << {
             project.pluginsrc.cost

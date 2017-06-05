@@ -1,4 +1,3 @@
 include ':app', ':mylibrary'
-include 'delog'
 include 'BuildSrc'
 include 'myapplication'

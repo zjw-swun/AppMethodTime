@@ -9,7 +9,6 @@ import org.gradle.api.Project
 
 class MyTransform extends Transform {
     Project project
-
     // 构造函数，我们将Project保存下来备用
     public MyTransform(Project project) {
         this.project = project
@@ -44,6 +43,11 @@ class MyTransform extends Transform {
     @Override
     public void transform(@NonNull TransformInvocation transformInvocation)
             throws TransformException, InterruptedException, IOException {
+        if(!project.AppMethodTime.enabled){
+            return;
+        }
+        def androidJarPath = getAndroidJarPath();
+
         String jarsDir
         // Transform的inputs有两种类型，一种是目录，一种是jar包，要分开遍历
         transformInvocation.inputs.each { TransformInput input ->
@@ -77,9 +81,8 @@ class MyTransform extends Transform {
                 //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
 
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                MyInject.injectDir(directoryInput.file.absolutePath,jarsDir,
-                        "com" + File.separator + "zjw" + File.separator + "appmethodtime",
-                        project.pluginsrc.cost)
+                MyInject.injectDir(androidJarPath,directoryInput.file.absolutePath,jarsDir,
+                        project.AppMethodTime.useCostTime,project.AppMethodTime.showLog)
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
                 // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
                 // 获取output目录
@@ -95,4 +98,28 @@ class MyTransform extends Transform {
 
         }
     }
+
+    private String getAndroidJarPath() {
+         def rootDir = project.rootDir
+         def localProperties = new File(rootDir, "local.properties")
+         def sdkDir = null;
+         if (localProperties.exists()) {
+             Properties properties = new Properties()
+             localProperties.withInputStream { instr ->
+                 properties.load(instr)
+             }
+             sdkDir = properties.getProperty('sdk.dir')
+         }
+
+          def platformsPath = sdkDir + File.separator + "platforms"
+
+          def platformsFile = new File(platformsPath)
+
+          if (platformsFile.exists() && platformsFile.isDirectory() && platformsFile.list().length >= 1) {
+              return  platformsPath + File.separator +platformsFile.list().sort()[platformsFile.list().size()-1]+ File.separator +"android.jar"
+          }
+
+        return ""
+    }
+
 }

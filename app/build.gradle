@@ -31,18 +31,34 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    //compile project(path: ':myapplication')
+    compile project(path: ':mylibrary')
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    testCompile 'junit:junit:4.12'
     compile 'org.greenrobot:eventbus:3.0.0'
-    compile project(path: ':mylibrary')
-    compile project(path: ':myapplication')
+    compile 'com.android.support:design:25.3.1'
+    testCompile 'junit:junit:4.12'
 }
 
 
-pluginsrc{
-    message = 'hello gradle plugin'
-    cost = true
+AppMethodTime {
+    //enabled默认值为true
+    //enabled = true 表示允许插入函数耗时测量代码
+    //enabled = false 表示不允许插入函数耗时测量代码
+    enabled = true;
+
+    //useCostTime默认值为true
+    // useCostTime = true 表示本lib module或本application module中build\intermediates\classes\debug目录下
+    // class对应java文件中带有CostTime注解的方法才会在编译成class时被插入函数耗时测量代码，
+
+    // useCostTime = false 表示本lib module或本application module中build\intermediates\classes\debug目录下
+    // class对应java文件所有书写的方法均会在编译成class时被插入数耗时测量代码
+    useCostTime = true
+
+    //showLog默认值为true
+    // showLog = true 表示允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
+    // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
+    showLog = true
 }
 
 //preBuild.dependsOn appPlugin
