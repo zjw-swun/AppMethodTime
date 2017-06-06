@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
-//apply plugin: 'com.branch.plugin.dellog'
-apply plugin: com.zjw.plugin.MyPlugin
-apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'com.zjw.plugin.appmethodtime'
+//apply plugin: com.zjw.plugin.MyPlugin
 
 android {
     compileSdkVersion 25
@@ -21,11 +20,6 @@ android {
         }
     }
 }
-apt {
-    arguments {
-        eventBusIndex "org.greenrobot.eventbusperf.MyEventBusIndex"
-    }
-}
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -35,7 +29,6 @@ dependencies {
     compile project(path: ':mylibrary')
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.android.support:design:25.3.1'
     testCompile 'junit:junit:4.12'
 }
@@ -60,5 +53,3 @@ AppMethodTime {
     // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
     showLog = true
 }
-
-//preBuild.dependsOn appPlugin
