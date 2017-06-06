@@ -48,7 +48,7 @@ public class MyInject {
                         && !filePath.contains("CostTime")
                 ) {
                     //  println("filePath is " + filePath);
-                    String classPath = filePath.split("classes\\\\debug\\\\")[1]
+                    String classPath = filePath.split("\\\\debug\\\\")[1]
                     String className = classPath.substring(0, classPath.length() - 6).replace('\\', '.').replace('/', '.')
                     //   println("className is " + className);
                     //开始修改class文件
@@ -62,8 +62,8 @@ public class MyInject {
                     CtMethod[] methods = c.getDeclaredMethods();
                     for (CtMethod method : methods) {
                         //println("method ====" + method.longName)
-                        if (method.isEmpty()) {
-                            //空函数体有可能是抽象函数以及接口函数
+                        if (method.isEmpty() || Modifier.isNative(method.getModifiers())) {
+                            //空函数体有可能是抽象函数以及接口函数或者native方法
                             return
                         }
                         if (useCostTime
@@ -88,16 +88,22 @@ public class MyInject {
             println(method.longName + "{")
         }
 
-        //获取方法参数名称
-        CodeAttribute codeAttribute = method.methodInfo.getCodeAttribute();
-        LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute
-                .getAttribute(LocalVariableAttribute.tag);
-        String[] paramNames = new String[method.getParameterTypes().length];
-        int pos = Modifier.isStatic(method.getModifiers()) ? 0 : 1;
         ArrayList<String> paramNameList = new ArrayList<>();
-        for (int i = 0; i < paramNames.length; i++) {
-            paramNames[i] = attr.variableName(i + pos);
-            paramNameList.add(attr.variableName(i + pos));
+        try {
+            //获取方法参数名称
+            CodeAttribute codeAttribute = method.methodInfo.getCodeAttribute();
+            LocalVariableAttribute attr = (LocalVariableAttribute) codeAttribute
+                    .getAttribute(LocalVariableAttribute.tag);
+            String[] paramNames = new String[method.getParameterTypes().length];
+            int pos = Modifier.isStatic(method.getModifiers()) ? 0 : 1;
+            for (int i = 0; i < paramNames.length; i++) {
+                paramNames[i] = attr.variableName(i + pos);
+                paramNameList.add(attr.variableName(i + pos));
+            }
+        }catch (Exception e){
+            if (showLog) {
+                e.printStackTrace()
+            }
         }
 
         def StringType = pool.getCtClass("java.lang.String");
@@ -134,7 +140,13 @@ public class MyInject {
         }
         startInjectStr.append(" \"); ")
         startInjectStr.append("\n     Thread.dumpStack();");
-        method.insertBefore(startInjectStr.toString())
+        try {
+            method.insertBefore(startInjectStr.toString())
+        } catch (Exception e) {
+            if (showLog) {
+                e.printStackTrace()
+            }
+        }
         //  println("方法第一句插入了：" + startInjectStr.toString() + "语句")
         if (showLog) {
             println(startInjectStr.toString())
@@ -152,7 +164,13 @@ public class MyInject {
         }
         endInjectStr.append(" \"); ");
         // endInjectStr.append("\n     Thread.dumpStack();");
-        method.insertAfter(endInjectStr.toString())
+        try {
+            method.insertAfter(endInjectStr.toString())
+        } catch (Exception e) {
+            if (showLog) {
+                e.printStackTrace()
+            }
+        }
         if (showLog) {
             println(endInjectStr.toString())
             println("}");
