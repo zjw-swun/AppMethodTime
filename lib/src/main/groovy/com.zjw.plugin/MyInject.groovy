@@ -8,7 +8,6 @@ import org.gradle.api.Project
 public class MyInject {
 
     private static ClassPool pool = ClassPool.getDefault()
-    //static String myCostTimeAnnotation = "@com.zjw.appmethodtime.CostTime";
     static String CostTime = "CostTime";
     static String AppMethodTime = "AppMethodTime";
     static String AppMethodOrder = "AppMethodOrder";

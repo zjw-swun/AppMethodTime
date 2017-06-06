@@ -8,7 +8,6 @@ import org.gradle.api.Project
 public class MyInject {
 
     private static ClassPool pool = ClassPool.getDefault()
-    //static String myCostTimeAnnotation = "@com.zjw.appmethodtime.CostTime";
     static String CostTime = "CostTime";
     static String AppMethodTime = "AppMethodTime";
     static String AppMethodOrder = "AppMethodOrder";
@@ -23,10 +22,8 @@ public class MyInject {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         pool.appendClassPath(path)
         pool.insertClassPath(androidJarPath)
-        //因为com.zjw.mylibrary.Bean 是lib库的代码 class只会在该目录下 编译顺序：先编译lib库再编译主项目
-        //不加以下代码 当javasist插入到 public void onEventMain(Bean event)该方法时找不到 Bean类
-        //原因就是path 和 androidJar 路径下找不到第三方和本地库中所引用的类
-        //加载第三方和本地库的jar
+        //编译顺序：先编译lib库再编译主项目
+        //所以需要加载依赖的lib jar
         File libJarDir = new File(jarsPath)
         try {
             if (libJarDir.exists() && libJarDir.isDirectory()) {
@@ -154,7 +151,7 @@ public class MyInject {
             endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
         }
         endInjectStr.append(" \"); ");
-       // endInjectStr.append("\n     Thread.dumpStack();");
+        // endInjectStr.append("\n     Thread.dumpStack();");
         method.insertAfter(endInjectStr.toString())
         if (showLog) {
             println(endInjectStr.toString())
