@@ -1,10 +1,13 @@
 package com.zjw.appmethodtime;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
+import com.zjw.mylibrary.LibActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         if (view.getId() == R.id.text_view) {
             Log.e(TAG, "onClick");
+            final Intent intent = new Intent(MainActivity.this, LibActivity.class);
+            startActivity(intent);
         }
     }
 }

@@ -1,0 +1,24 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'groovy'
+
+repositories {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:3.4.1'
+    implementation 'org.javassist:javassist:3.20.0-GA'
+}
+
+

@@ -1,3 +1,4 @@
-include ':app', ':mylibrary', ':lib'
-//include 'BuildSrc'
-include 'myapplication'
+include ':app'//, ':mylibrary'//, ':lib'
+include ':buildSrc'
+//include 'myapplication'
+include ':mylibrary'

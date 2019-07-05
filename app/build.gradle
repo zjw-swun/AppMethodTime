@@ -3,12 +3,18 @@ apply plugin: 'com.android.application'
 apply plugin: com.zjw.plugin.MyPlugin
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
     defaultConfig {
         applicationId "com.zjw.appmethodtime"
         minSdkVersion 14
-        targetSdkVersion 25
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -21,16 +27,11 @@ android {
     }
 }
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    //compile project(path: ':myapplication')
-    compile project(path: ':mylibrary')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.android.support:design:25.3.1'
-    testCompile 'junit:junit:4.12'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:28.0.0'
+    implementation project(":mylibrary")
 }
 
 
@@ -38,7 +39,7 @@ AppMethodTime {
     //enabled默认值为true
     //enabled = true 表示允许插入函数耗时测量代码
     //enabled = false 表示不允许插入函数耗时测量代码
-    enabled = true;
+    enabled = true
 
     //useCostTime默认值为true
     // useCostTime = true 表示本lib module或本application module中build\intermediates\classes\debug目录下
