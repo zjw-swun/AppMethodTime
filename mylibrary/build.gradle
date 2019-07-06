@@ -47,6 +47,8 @@ AppMethodTime {
     // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
     showLog = true
 
-    aarOrJarPath = "D:\\Github\\AppMethodTime\\mylibrary\\build\\outputs\\aar\\mylibrary-debug.aar"
+    //aarOrJarPath 需要使用 other:appMethodJarOrAar 任务单独执行
+    //aarOrJarPath = "D:\\Github\\AppMethodTime\\mylibrary\\build\\outputs\\aar\\mylibrary-debug.aar"
+    //aarOrJarPath = "D:\\Github\\AppMethodTime\\mylibrary\\build\\outputs\\aar\\Target_temp.jar"
 }
 

@@ -168,3 +168,7 @@ cost 等字段值的话，你得加上
 
 ![QQ图片20170512022507.png](http://upload-images.jianshu.io/upload_images/1857887-66422b07a91a9485.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 说明：如果函数返回类型是void log中对应`` return is null ``
+
+# 2019/7/6 新增支持修改aar和jar 中class插入字节码
+添加aarOrJarPath 配置字段，填入目标jar或者aar路径
+执行gradle面板对应项目中other目录appMethodJarOrAar 任务即可在aarOrJarPath 配置的同目录下生成带 Target_前缀的目标jar或者aar文件

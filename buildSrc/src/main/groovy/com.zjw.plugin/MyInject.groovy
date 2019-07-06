@@ -4,10 +4,9 @@ import javassist.*
 import javassist.bytecode.CodeAttribute
 import javassist.bytecode.LocalVariableAttribute
 import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.util.TextUtils
-import org.gradle.util.TextUtil
-
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
@@ -24,6 +23,8 @@ public class MyInject {
     static String AppMethodOrder = "AppMethodOrder";
     static String LogLevel = "e";
     static String androidJarPath = "";
+    static boolean useCostTime;
+    static boolean showLog;
 
     // 存储文件列表
     private static ArrayList<String> fileList = new ArrayList<>();
@@ -34,19 +35,30 @@ public class MyInject {
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
 
         //this.path = path
-        //this.useCostTime = useCostTime
-        //this.showLog = showLog
+        this.useCostTime = useCostTime
+        this.showLog = showLog
         //this.aarOrJarPath = aarOrJarPath
         this.androidJarPath = androidJarPath
+        File tragetFile = new File(aarOrJarPath)
         if (!TextUtils.isEmpty(aarOrJarPath)) {
+            if (!tragetFile.exists()) {
+                return
+            }
+            if (showLog) {
+                println("modifyAarOrJar")
+            }
             if (aarOrJarPath.endsWith(".jar")) {
-                modifyJar(new File(aarOrJarPath))
+                modifyJar(tragetFile)
             } else if (aarOrJarPath.endsWith(".aar")) {
-                modifyAar(new File(aarOrJarPath))
+                modifyAar(tragetFile)
             }
         } else {
-            pool.appendClassPath(path)
-            pool.insertClassPath(androidJarPath)
+            if (TextUtils.isEmpty(androidJarPath)) {
+                return
+            }
+            ArrayList<ClassPath> classPathArrayList = new ArrayList<>()
+            classPathArrayList.add(pool.appendClassPath(path))
+            classPathArrayList.add(pool.appendClassPath(androidJarPath))
             //编译顺序：先编译lib库再编译主项目
             //所以需要加载依赖的lib jar
             File libJarDir = new File(jarsPath)
@@ -54,11 +66,10 @@ public class MyInject {
                 if (libJarDir.exists() && libJarDir.isDirectory()) {
                     ArrayList<String> arr = getFile(libJarDir);
                     for (String a : arr) {
-                        pool.appendClassPath(a);
+                        classPathArrayList.add(pool.appendClassPath(a));
                     }
                 }
             } catch (Exception e) {
-
             }
 
             File dir = new File(path)
@@ -67,7 +78,9 @@ public class MyInject {
                     String filePath = file.absolutePath
                     //确保当前文件是class文件，并且不是系统自动生成的class文件以及注解文件
                     if (filter(filePath)) {
-                        println("filePath is " + filePath);
+                        if (showLog) {
+                            println("filePath is " + filePath);
+                        }
                         String classPath = ""
                         if (filePath.contains(File.separator + "release" + File.separator)) {
                             classPath = filePath.split("\\\\release\\\\")[1]
@@ -82,20 +95,21 @@ public class MyInject {
                         //println("className is " + className);
 
                         CtClass c = modifyClass(className)
-                        if(c!=null) {
+                        if (c != null) {
                             c.writeFile(path)
                             c.detach()
                         }
                     }
                 }
             }
+            classPathArrayList.forEach { ClassPath classPath ->
+                pool.removeClassPath(classPath)
+            }
         }
     }
 
     private static CtClass modifyClass(String className) {
-        boolean useCostTime
-        boolean showLog
-        String path
+       // String path
         //开始修改class文件
         CtClass c = pool.getCtClass(className)
         if (c.isFrozen()) {
@@ -243,19 +257,22 @@ public class MyInject {
     public static File unzipEntryToTemp(ZipEntry element, ZipFile zipFile, String parentDir) {
         def stream = zipFile.getInputStream(element);
         def array = IOUtils.toByteArray(stream);
-        String hex = DigestUtils.md5Hex(element.getName());
-        File targetFile = new File(parentDir, hex + ".jar");
+        //String hex = DigestUtils.md5Hex(element.getName());
+        File targetFile = new File(parentDir, "temp.jar");
         if (targetFile.exists()) {
             targetFile.delete()
         }
-        new FileOutputStream(targetFile).write(array)
+        def out = new FileOutputStream(targetFile)
+        out.write(array)
+        out.close()
+        stream.close()
         return targetFile
     }
 
     public
     static File modifyJar(File jarFile) {
-        pool.appendClassPath(jarFile.path)
-        pool.insertClassPath(androidJarPath)
+        ClassPath jarClassPath = pool.appendClassPath(jarFile.path)
+        ClassPath androidClassPath = pool.insertClassPath(androidJarPath)
         /**
          * 读取原jar
          */
@@ -290,8 +307,8 @@ public class MyInject {
                 CtClass c = modifyClass(className)
                 if (c != null) {
                     modifiedClassBytes = c.toBytecode()
+                    c.detach()
                 }
-                c.detach()
             }
             if (modifiedClassBytes == null) {
                 jarOutputStream.write(sourceClassBytes);
@@ -303,6 +320,8 @@ public class MyInject {
 //            Log.info("${hexName} is modified");
         jarOutputStream.close();
         file.close();
+        pool.removeClassPath(jarClassPath)
+        pool.removeClassPath(androidClassPath)
         return outputJar;
     }
 
@@ -317,6 +336,9 @@ public class MyInject {
         }
 
         ZipOutputStream outputAarStream = new ZipOutputStream(new FileOutputStream(outputAar))
+        FileInputStream fileInputStream = null;
+        File innerJar = null;
+        File outJar = null;
         while (entries.hasMoreElements()) {
             ZipEntry element = entries.nextElement();
             def name = element.getName();
@@ -324,20 +346,31 @@ public class MyInject {
 
             outputAarStream.putNextEntry(zipEntry);
             if (name.endsWith(".jar")) {
-                File innerJar = unzipEntryToTemp(element, zipFile, targetFile.parent);
-                def outJar = modifyJar(innerJar);
-                outputAarStream.write(IOUtils.toByteArray(new FileInputStream(outJar)))
+                innerJar = unzipEntryToTemp(element, zipFile, targetFile.parent);
+                outJar = modifyJar(innerJar);
+                fileInputStream = new FileInputStream(outJar)
+                outputAarStream.write(IOUtils.toByteArray(fileInputStream))
             } else {
                 def stream = zipFile.getInputStream(element)
                 byte[] array = IOUtils.toByteArray(stream)
                 if (array != null) {
                     outputAarStream.write(array)
                 }
+                stream.close()
             }
             outputAarStream.closeEntry();
         }
         zipFile.close()
+        if (fileInputStream!= null){
+            fileInputStream.close()
+        }
         outputAarStream.close()
+        if (innerJar != null){
+            innerJar.delete()
+        }
+        if (outJar != null){
+            outJar.delete()
+        }
     }
 
 }

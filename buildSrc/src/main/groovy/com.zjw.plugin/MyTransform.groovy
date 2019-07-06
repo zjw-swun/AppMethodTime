@@ -17,6 +17,14 @@ class MyTransform extends Transform {
         this.project = project
         this.buildType = buildType
         this.isLib = isLib
+
+        project.task('appMethodJarOrAar')  {
+            doLast{
+                println("appMethodJarOrAar "+project.AppMethodTime.aarOrJarPath)
+                MyInject.injectDir(getAndroidJarPath(), "", "",
+                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog,project.AppMethodTime.aarOrJarPath,buildType)
+            }
+        }
     }
 
     // 设置我们自定义的Transform对应的Task名称
