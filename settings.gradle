@@ -1,4 +1,1 @@
-include ':app'//, ':mylibrary'//, ':lib'
-include ':buildSrc'
-//include 'myapplication'
-include ':mylibrary'
+include ':app', ':buildSrc', ':mylibrary', ':customLint'

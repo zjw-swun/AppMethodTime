@@ -20,7 +20,6 @@ class MyTransform extends Transform {
 
         project.task('appMethodJarOrAar')  {
             doLast{
-                println("appMethodJarOrAar "+project.AppMethodTime.aarOrJarPath)
                 MyInject.injectDir(getAndroidJarPath(), "", "",
                         project.AppMethodTime.useCostTime, project.AppMethodTime.showLog,project.AppMethodTime.aarOrJarPath,buildType)
             }

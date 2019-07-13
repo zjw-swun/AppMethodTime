@@ -1,15 +1,11 @@
 apply plugin: 'com.android.application'
-//apply plugin: 'com.zjw.plugin.appmethodtime'
 apply plugin: com.zjw.plugin.MyPlugin
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
-
-    lintOptions {
-        checkReleaseBuilds false
-        abortOnError false
-    }
 
     defaultConfig {
         applicationId "com.zjw.appmethodtime"
@@ -23,6 +19,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
 }
@@ -32,6 +29,9 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:design:28.0.0'
     implementation project(":mylibrary")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    lintChecks project(":customLint")
 }
 
 
@@ -49,8 +49,18 @@ AppMethodTime {
     // class对应java文件所有书写的方法均会在编译成class时被插入数耗时测量代码
     useCostTime = false
 
-    //showLog默认值为true
+    //showLog默认值为false
     // showLog = true 表示允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
     // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
-    showLog = true
+    showLog = false
 }
+
+/**
+ * 需要在执行 ssembleDebug Task 之前挂载 lintDebug
+ */
+project.afterEvaluate {
+    def assembleDebugTask = project.tasks.find { it.name == 'assembleDebug' }
+    def lintTask = project.tasks.find { it.name == 'lintDebug' }
+    assembleDebugTask.dependsOn(lintTask)
+}
+

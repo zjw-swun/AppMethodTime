@@ -44,9 +44,6 @@ public class MyInject {
             if (!tragetFile.exists()) {
                 return
             }
-            if (showLog) {
-                println("modifyAarOrJar")
-            }
             if (aarOrJarPath.endsWith(".jar")) {
                 modifyJar(tragetFile)
             } else if (aarOrJarPath.endsWith(".aar")) {
@@ -78,9 +75,6 @@ public class MyInject {
                     String filePath = file.absolutePath
                     //确保当前文件是class文件，并且不是系统自动生成的class文件以及注解文件
                     if (filter(filePath)) {
-                        if (showLog) {
-                            println("filePath is " + filePath);
-                        }
                         String classPath = ""
                         if (filePath.contains(File.separator + "release" + File.separator)) {
                             classPath = filePath.split("\\\\release\\\\")[1]
@@ -92,7 +86,6 @@ public class MyInject {
                         }
 
                         String className = classPath.substring(0, classPath.length() - 6).replace('\\', '.').replace('/', '.')
-                        //println("className is " + className);
 
                         CtClass c = modifyClass(className)
                         if (c != null) {
@@ -120,7 +113,6 @@ public class MyInject {
         //遍历类的所有方法
         CtMethod[] methods = c.getDeclaredMethods();
         for (CtMethod method : methods) {
-            //println("method ====" + method.longName)
             if (method.isEmpty() || Modifier.isNative(method.getModifiers())) {
                 //空函数体有可能是抽象函数以及接口函数或者native方法
                 return null
@@ -301,9 +293,7 @@ public class MyInject {
             byte[] modifiedClassBytes = null;
             byte[] sourceClassBytes = IOUtils.toByteArray(inputStream);
             if (filter(entryName)) {
-                //println("entryName "+entryName)
                 className = entryName.replace("/", ".").replace(".class", "")
-                //println("modifyJar className "+className)
                 CtClass c = modifyClass(className)
                 if (c != null) {
                     modifiedClassBytes = c.toBytecode()

@@ -3,6 +3,6 @@ package com.zjw.plugin;
 class MyCustomPluginExtension {
     def enabled = true
     def useCostTime = false
-    def showLog = true
+    def showLog = false
     def aarOrJarPath = ""
 }

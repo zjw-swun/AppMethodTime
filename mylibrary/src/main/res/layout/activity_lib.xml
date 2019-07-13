@@ -7,4 +7,12 @@
     android:layout_height="match_parent"
     tools:context="com.zjw.mylibrary.LibActivity">
 
+    <TextView
+        android:id="@+id/mTextView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:text="Click Me"/>
 </android.support.constraint.ConstraintLayout>

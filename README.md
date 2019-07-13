@@ -172,3 +172,11 @@ cost 等字段值的话，你得加上
 # 2019/7/6 新增支持修改aar和jar 中class插入字节码
 添加aarOrJarPath 配置字段，填入目标jar或者aar路径
 执行gradle面板对应项目中other目录appMethodJarOrAar 任务即可在aarOrJarPath 配置的同目录下生成带 Target_前缀的目标jar或者aar文件
+
+# 2019/7/13 增加自定义lint
+感谢 https://github.com/Omooo/CustomLint 的作者
+
+# 调试Gradle 插件的方法
+1. 运行按钮 -> edit config  -> 命名 + 指定要调试的源码位置 ->apply
+2. studio 命令行中 : gradle assembleDebug -Dorg.gradle.debug=true --no-daemon
+3. studio 面板debug启动 按钮 
