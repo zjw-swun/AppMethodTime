@@ -17,4 +17,11 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+    <declare-styleable name="ExpandableTextView">
+        <attr name="foldText" format="string"/>
+        <attr name="unFoldText" format="string"/>
+        <attr name="foldLine" format="integer"/>
+        <attr name="tailTextColor" format="color"/>
+        <attr name="canFoldAgain" format="boolean"/>
+    </declare-styleable>
 </resources>

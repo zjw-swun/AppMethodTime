@@ -1,6 +1,7 @@
 package com.zjw.appmethodtime;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.util.Log;
 
@@ -20,6 +21,11 @@ public class MyApplication extends Application {
         super.onCreate();
         //自定义MyLogDetector lint error提示
         Log.i("TAG", "啊啊啊啊，我被发现了！");
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
     }
 
     @Override

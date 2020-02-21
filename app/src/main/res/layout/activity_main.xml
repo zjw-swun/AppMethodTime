@@ -1,17 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.zjw.appmethodtime.MainActivity">
 
-    <TextView
-        android:id="@+id/mTextView"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/titleLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:text="Click Me"/>
+        android:layout_marginRight="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:shrinkColumns="0">
+
+
+        <RelativeLayout
+            android:id="@+id/contentRl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <com.zjw.appmethodtime.EllipsizedTextView
+                android:id="@+id/mTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:textSize="14dp"
+                android:maxLines="2"
+                android:visibility="visible"
+                app:unFoldText="   查看详情＞"
+                android:text="1月25日暂停营业，2232" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
 </RelativeLayout>

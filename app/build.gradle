@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: com.zjw.plugin.MyPlugin
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
@@ -9,12 +8,19 @@ android {
 
     defaultConfig {
         applicationId "com.zjw.appmethodtime"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -28,32 +34,13 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.android.support:design:28.0.0'
-    implementation project(":mylibrary")
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.7.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.7.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
-    lintChecks project(":customLint")
 }
 
 
-AppMethodTime {
-    //enabled默认值为true
-    //enabled = true 表示允许插入函数耗时测量代码
-    //enabled = false 表示不允许插入函数耗时测量代码
-    enabled = true
-
-    //useCostTime默认值为true
-    // useCostTime = true 表示本lib module或本application module中build\intermediates\classes\debug目录下
-    // class对应java文件中带有CostTime注解的方法才会在编译成class时被插入函数耗时测量代码，
-
-    // useCostTime = false 表示本lib module或本application module中build\intermediates\classes\debug目录下
-    // class对应java文件所有书写的方法均会在编译成class时被插入数耗时测量代码
-    useCostTime = false
-
-    //showLog默认值为false
-    // showLog = true 表示允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
-    // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
-    showLog = false
-}
 
 /**
  * 需要在执行 ssembleDebug Task 之前挂载 lintDebug
