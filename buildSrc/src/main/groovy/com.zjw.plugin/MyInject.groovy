@@ -71,22 +71,13 @@ public class MyInject {
 
             File dir = new File(path)
             if (dir.isDirectory()) {
+                def root = dir.absolutePath
                 dir.eachFileRecurse { File file ->
                     String filePath = file.absolutePath
                     //确保当前文件是class文件，并且不是系统自动生成的class文件以及注解文件
                     if (filter(filePath)) {
-                        String classPath = ""
-                        if (filePath.contains(File.separator + "release" + File.separator)) {
-                            classPath = filePath.split("\\\\release\\\\")[1]
-                        } else {
-                            classPath = filePath.split("\\\\debug\\\\")[1]
-                        }
-                        if (filePath.contains(File.separator + "javac" + File.separator)) {
-                            classPath = filePath.split("\\\\classes\\\\")[1]
-                        }
-
-                        String className = classPath.substring(0, classPath.length() - 6).replace('\\', '.').replace('/', '.')
-
+                        String classPath = filePath
+                        String className = classPath.substring(root.length() + 1, classPath.length() - 6).replaceAll("/", ".")
                         CtClass c = modifyClass(className)
                         if (c != null) {
                             c.writeFile(path)
