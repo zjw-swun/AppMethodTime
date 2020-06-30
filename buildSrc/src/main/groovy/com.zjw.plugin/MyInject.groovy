@@ -252,8 +252,7 @@ public class MyInject {
         return targetFile
     }
 
-    public
-    static File modifyJar(File jarFile) {
+    public static File modifyJar(File jarFile) {
         ClassPath jarClassPath = pool.appendClassPath(jarFile.path)
         ClassPath androidClassPath = pool.insertClassPath(androidJarPath)
         /**
