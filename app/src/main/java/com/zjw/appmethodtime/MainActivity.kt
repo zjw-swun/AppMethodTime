@@ -31,20 +31,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     @CostTime
     override fun onClick(view: View) {
         if (view.id == R.id.mTextView) {
-            val fromJson = Gson().fromJson<SearchShopModel>("{\n" +
-                   // "    \"name\": \"zjw\",\n" +
-                    "    \"age\": 1,\n" +
-                    "    \"title\": \"test\"\n" +
-                    "}"
-                    , SearchShopModel::class.java)
-            Log.e(TAG, "fromJson is $fromJson")
-            val searchShopModel = SearchShopModel()
-            searchShopModel.base = "我是基类Title"
-            searchShopModel.shop = "我是子类Title"
-            val toJson = Gson().toJson(searchShopModel)
-
-            Log.e(TAG, "toJson is $toJson")
-
+            try {
+                Thread.sleep(500)
+            } catch (e: Exception) {
+            }
         }
     }
 }

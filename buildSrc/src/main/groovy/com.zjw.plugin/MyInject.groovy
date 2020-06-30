@@ -151,34 +151,36 @@ public class MyInject {
         }
 
         def StringType = pool.getCtClass("java.lang.String");
-        method.addLocalVariable("startTime", CtClass.longType);
-        method.addLocalVariable("endTime", CtClass.longType);
-        method.addLocalVariable("fullClassName", StringType);
-        method.addLocalVariable("className", StringType);
-        method.addLocalVariable("methodName", StringType);
-        method.addLocalVariable("lineNumber", CtClass.intType);
-        method.addLocalVariable("info", StringType);
+        method.addLocalVariable("_startTime", CtClass.longType);
+        method.addLocalVariable("_endTime", CtClass.longType);
+        method.addLocalVariable("_fullClassName", StringType);
+        method.addLocalVariable("_className", StringType);
+        method.addLocalVariable("_methodName", StringType);
+        method.addLocalVariable("_lineNumber", CtClass.intType);
+        method.addLocalVariable("_info", StringType);
+        method.addLocalVariable("_limit", StringType);
         if (showLog) {
-            println("   long startTime;")
-            println("   long endTime;")
-            println("   String fullClassName;")
-            println("   String className;")
-            println("   String methodName;")
-            println("   String lineNumber;")
-            println("   String info;")
+            println("   long   _startTime;")
+            println("   long   _endTime;")
+            println("   String _fullClassName;")
+            println("   String _className;")
+            println("   String _methodName;")
+            println("   String _lineNumber;")
+            println("   String _info;")
+            println("   String _limit;")
         }
 
         def lineNumber = method.methodInfo.getLineNumber(0);
         //插入到函数第一句
         StringBuilder startInjectStr = new StringBuilder();
-        startInjectStr.append("     startTime = System.nanoTime();\n");
-        startInjectStr.append("     fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
-        startInjectStr.append("     className = fullClassName.substring(fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
-        startInjectStr.append("     methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
-        startInjectStr.append("     lineNumber = " + lineNumber + ";\n");
-        startInjectStr.append("     info =\"===\"+startTime+\"===  \"+ fullClassName+\": \"+methodName + \" (\" + className + \":\"+ lineNumber + \")\";\n");
+        startInjectStr.append("     _startTime = System.nanoTime();\n");
+        startInjectStr.append("     _fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
+        startInjectStr.append("     _className = _fullClassName.substring(_fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
+        startInjectStr.append("     _methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
+        startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
+        startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
         startInjectStr.append("     android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
-        startInjectStr.append("     info +\": ");
+        startInjectStr.append("     _info +\": ");
         for (int i = 0; i < paramNameList.size(); i++) {
             startInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
         }
@@ -199,10 +201,11 @@ public class MyInject {
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
-        endInjectStr.append("   endTime = System.nanoTime();\n");
+        endInjectStr.append("   _endTime = System.nanoTime();\n");
+        endInjectStr.append("   _limit = ((_endTime - _startTime)*1.0f/1000000) >= 300 ? \" 警告>=300毫秒 \" : \"\" ;\n");
         endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
-        endInjectStr.append("info + \": \" ");
-        endInjectStr.append("+(endTime - startTime)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
+        endInjectStr.append("_info + \": \" + _limit + \"\"");
+        endInjectStr.append("+(_endTime - _startTime)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
         for (int i = 0; i < paramNameList.size(); i++) {
             endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
         }
