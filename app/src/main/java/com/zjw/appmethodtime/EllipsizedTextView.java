@@ -4,8 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -18,8 +18,6 @@ import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
-
-import com.zjw.appmethodtime.R;
 
 /**
  * 在原textview 文案后添加$mFoldLine，如果遇到末尾放不下就变成 ...$mFoldLine 的组件
