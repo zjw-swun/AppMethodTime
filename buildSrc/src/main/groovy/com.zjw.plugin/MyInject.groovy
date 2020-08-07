@@ -56,10 +56,11 @@ public class MyInject {
             ArrayList<ClassPath> classPathArrayList = new ArrayList<>()
             classPathArrayList.add(pool.appendClassPath(path))
             classPathArrayList.add(pool.appendClassPath(androidJarPath))
-            //编译顺序：先编译lib库再编译主项目
-            //所以需要加载依赖的lib jar
-            File libJarDir = new File(jarsPath)
+
             try {
+                //编译顺序：先编译lib库再编译主项目
+                //所以需要加载依赖的lib jar
+                File libJarDir = new File(jarsPath)
                 if (libJarDir.exists() && libJarDir.isDirectory()) {
                     ArrayList<String> arr = getFile(libJarDir);
                     for (String a : arr) {
