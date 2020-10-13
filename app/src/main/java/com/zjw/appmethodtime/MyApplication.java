@@ -23,6 +23,7 @@ public class MyApplication extends Application {
         super.onCreate();
         //自定义MyLogDetector lint error提示
         Log.i("TAG", "啊啊啊啊，我被发现了！");
+        Test(new Gson());
     }
 
     @Override
@@ -37,9 +38,5 @@ public class MyApplication extends Application {
 
     private void Test(Gson gson){
         Log.e("TAG",""+gson.toString());
-    }
-
-    private void Test(int gson){
-        Log.e("TAG","");
     }
 }

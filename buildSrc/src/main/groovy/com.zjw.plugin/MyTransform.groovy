@@ -20,8 +20,45 @@ class MyTransform extends Transform {
         this.isLib = isLib
         project.task('appMethodJarOrAar') {
             doLast {
-                MyInject.injectDir(getAndroidJarPath(), "", "",map,
+                MyInject.injectDir(getAndroidJarPath(), "", "", map,
                         project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
+            }
+        }
+
+        //修改.idea libraries下依赖（会污染./gradle全局缓存）
+        project.task('appMethodLib') {
+            doLast {
+                fillJarMap()
+                def jarPath = ""
+                //处理三方库，以gson为例
+                map.each {
+                    key, value ->
+                        if (value.contains("gson-2.8.5")) {
+                            println("injectDir:" + value)
+                            jarPath = value
+                            return true
+                        }
+                }
+                MyInject.injectDir(getAndroidJarPath(), ".idea", jarPath, map,
+                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, "", buildType)
+            }
+        }
+
+        //删除.idea libraries下依赖（会污染./gradle全局缓存）的lib
+        project.task('appMethodLibDelete') {
+            doLast {
+                fillJarMap()
+                map.each {
+                    key, value ->
+                        if (value.contains("gson-2.8.5")) {
+                            println("delete injectDir:" + value)
+                            def libFile = new File(value)
+                            if (libFile.exists()) {
+                                libFile.delete()
+                            }
+                            return true
+                        }
+                }
             }
         }
     }
@@ -99,7 +136,7 @@ class MyTransform extends Transform {
                 //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
 
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                MyInject.injectDir(androidJarPath, directoryInput.file.absolutePath, jarsDir,map,
+                MyInject.injectDir(androidJarPath, directoryInput.file.absolutePath, jarsDir, map,
                         project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
                 // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
@@ -138,7 +175,7 @@ class MyTransform extends Transform {
                     for (int i = 0; i < relativePathList.length; i++) {
                         //println(relativePathList[i])
                         //aar 可能带有file其他资源属性
-                        if (relativePathList[i].startsWith("jar:")){
+                        if (relativePathList[i].startsWith("jar:")) {
                             relativePath = relativePathList[i]
                             break out
                         }

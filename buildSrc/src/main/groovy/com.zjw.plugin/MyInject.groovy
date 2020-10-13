@@ -30,7 +30,7 @@ public class MyInject {
     private static ArrayList<String> fileList = new ArrayList<>();
 
 
-    public static void injectDir(String androidJarPath, String path, String jarsPath,HashMap<String, String> map,
+    public static void injectDir(String androidJarPath, String path, String jarsPath, HashMap<String, String> map,
                                  boolean useCostTime, boolean showLog, String aarOrJarPath, String buildType) {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
@@ -49,6 +49,10 @@ public class MyInject {
                 modifyJar(tragetFile)
             } else if (aarOrJarPath.endsWith(".aar")) {
                 modifyAar(tragetFile)
+            }
+        } else if (".idea" == path) {
+            if (map.size() > 0) {
+                modifyJar(new File(jarsPath), true)
             }
         } else {
             if (TextUtils.isEmpty(androidJarPath)) {
@@ -96,20 +100,10 @@ public class MyInject {
                 pool.removeClassPath(classPath)
             }
         }
-
-        //处理三方库，以gson为例
-        map.each {
-            key,value->
-                if (value.contains("gson-2.8.5")){
-                    println("injectDir:" + value)
-                    modifyJar(new File(value))
-                    return true
-                }
-        }
     }
 
     private static CtClass modifyClass(String className) {
-       // String path
+        // String path
         //开始修改class文件
         CtClass c = pool.getCtClass(className)
         if (c.isFrozen()) {
@@ -271,7 +265,7 @@ public class MyInject {
         return targetFile
     }
 
-    public static File modifyJar(File jarFile) {
+    public static File modifyJar(File jarFile, boolean isOverride) {
         println("modifyJar:" + jarFile.path)
         ClassPath jarClassPath = pool.appendClassPath(jarFile.path)
         ClassPath androidClassPath = pool.insertClassPath(androidJarPath)
@@ -321,9 +315,11 @@ public class MyInject {
         jarOutputStream.close();
         file.close();
 
-        String sourcesFile = jarFile.path
-        jarFile.delete()
-        outputJar.renameTo(new File(sourcesFile))
+        if (isOverride) {
+            String sourcesFile = jarFile.path
+            jarFile.delete()
+            outputJar.renameTo(new File(sourcesFile))
+        }
 
         pool.removeClassPath(jarClassPath)
         pool.removeClassPath(androidClassPath)
@@ -366,14 +362,14 @@ public class MyInject {
             outputAarStream.closeEntry();
         }
         zipFile.close()
-        if (fileInputStream!= null){
+        if (fileInputStream != null) {
             fileInputStream.close()
         }
         outputAarStream.close()
-        if (innerJar != null){
+        if (innerJar != null) {
             innerJar.delete()
         }
-        if (outJar != null){
+        if (outJar != null) {
             outJar.delete()
         }
     }
