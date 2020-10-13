@@ -23,18 +23,21 @@ public class MyPlugin implements Plugin<Project> {
             buildType = "Release"
         }
         //注册build.gradle中
-        project.extensions.create('AppMethodTime', MyCustomPluginExtension)
-
+        def extensions = project.extensions.create('AppMethodTime', MyCustomPluginExtension)
         /*  project.task('appPlugin') << {
               project.pluginsrc.cost
           }*/
 
-        if (project.plugins.hasPlugin(AppPlugin)) {
-            def android = project.extensions.findByType(AppExtension)
-            android.registerTransform(new MyTransform(project, buildType, false))
-        } else if (project.plugins.hasPlugin(LibraryPlugin)) {
-            def android = project.extensions.findByType(LibraryExtension)
-            android.registerTransform(new MyTransform(project, buildType, true))
+        //boolean useCostTime = extensions.useCostTime
+
+        if (extensions.enabled) {
+            if (project.plugins.hasPlugin(AppPlugin)) {
+                def android = project.extensions.findByType(AppExtension)
+                android.registerTransform(new MyTransform(project, buildType, false))
+            } else if (project.plugins.hasPlugin(LibraryPlugin)) {
+                def android = project.extensions.findByType(LibraryExtension)
+                android.registerTransform(new MyTransform(project, buildType, true))
+            }
         }
     }
 }
