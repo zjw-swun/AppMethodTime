@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
-/*
 apply plugin: com.zjw.plugin.MyPlugin
 
 
@@ -25,7 +24,6 @@ AppMethodTime {
     // showLog = false 表示不允许在Gradle Console中输出插入函数耗时测量代码过程中的Log
     showLog = true
 }
-*/
 
 android {
     compileSdkVersion 28

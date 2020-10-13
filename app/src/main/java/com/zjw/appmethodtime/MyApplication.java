@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 /**
  * Created by hasee on 2017/6/5.
  */
@@ -31,5 +33,13 @@ public class MyApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
+    }
+
+    private void Test(Gson gson){
+        Log.e("TAG",""+gson.toString());
+    }
+
+    private void Test(int gson){
+        Log.e("TAG","");
     }
 }

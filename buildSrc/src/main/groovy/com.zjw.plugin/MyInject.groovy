@@ -30,7 +30,8 @@ public class MyInject {
     private static ArrayList<String> fileList = new ArrayList<>();
 
 
-    public static void injectDir(String androidJarPath, String path, String jarsPath, boolean useCostTime, boolean showLog, String aarOrJarPath, String buildType) {
+    public static void injectDir(String androidJarPath, String path, String jarsPath,HashMap<String, String> map,
+                                 boolean useCostTime, boolean showLog, String aarOrJarPath, String buildType) {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
 
@@ -58,6 +59,10 @@ public class MyInject {
             classPathArrayList.add(pool.appendClassPath(androidJarPath))
 
             try {
+                //加载gradle指定依赖
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    classPathArrayList.add(pool.appendClassPath(entry.value))
+                }
                 //编译顺序：先编译lib库再编译主项目
                 //所以需要加载依赖的lib jar
                 File libJarDir = new File(jarsPath)

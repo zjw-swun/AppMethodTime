@@ -12,16 +12,16 @@ class MyTransform extends Transform {
     Project project
     String buildType
     boolean isLib
+    HashMap<String, String> map = new HashMap<>()
     // 构造函数，我们将Project保存下来备用
-    public MyTransform(Project project,String buildType ,boolean isLib) {
+    public MyTransform(Project project, String buildType, boolean isLib) {
         this.project = project
         this.buildType = buildType
         this.isLib = isLib
-
-        project.task('appMethodJarOrAar')  {
-            doLast{
-                MyInject.injectDir(getAndroidJarPath(), "", "",
-                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog,project.AppMethodTime.aarOrJarPath,buildType)
+        project.task('appMethodJarOrAar') {
+            doLast {
+                MyInject.injectDir(getAndroidJarPath(), "", "",map,
+                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
             }
         }
     }
@@ -99,8 +99,8 @@ class MyTransform extends Transform {
                 //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
 
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                MyInject.injectDir(androidJarPath, directoryInput.file.absolutePath, jarsDir,
-                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog,project.AppMethodTime.aarOrJarPath,buildType)
+                MyInject.injectDir(androidJarPath, directoryInput.file.absolutePath, jarsDir,map,
+                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
                 // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
                 // 获取output目录
@@ -117,8 +117,8 @@ class MyTransform extends Transform {
         }
     }
 
-    private void fillJarMap(){
-        def librariesRoot = project.rootDir.path + "/.idea/libraries/"
+    private void fillJarMap() {
+        def librariesRoot = project.rootDir.path + "${File.separator}.idea${File.separator}libraries${File.separator}"
         def home = System.getProperty("user.home") //  /Users/hana
         File libraryFile = new File(librariesRoot)
         File[] resourceFiles
@@ -134,18 +134,18 @@ class MyTransform extends Transform {
                     int bottomIndex = relativePath.indexOf(".jar")
                     if (headIndex > 0 && bottomIndex > 0) {
                         String indexPath = relativePath.substring(headIndex, bottomIndex)
-                        String resultPath = home + "/" + indexPath + ".jar"
+                        String resultPath = home + "${File.separator}" + indexPath + ".jar"
                         String name = component.library.@name[0]
-                        String fixName = name.replace("Gradle: ","")
-                        map.put(fixName,resultPath)
+                        String fixName = name.replace("Gradle: ", "")
+                        map.put(fixName, resultPath)
                         //lifecycle-common-2.1.0.jar
-                        //println(resultPath)
+                        println(resultPath)
                         ///Users/hana/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.1.0/c67e7807d9cd6c329b9d0218b2ec4e505dd340b7/lifecycle-common-2.1.0.jar
                     }
 
             }
-        }else {
-            println("libraryFile is empty" )
+        } else {
+            println("libraryFile is empty")
         }
     }
 
@@ -153,7 +153,7 @@ class MyTransform extends Transform {
      * todo 这里可以设置配置指定的jar名称，或者全量
      * todo 将match result 添加到classpath
      * */
-    private String matchJarClassPath(String jarName){
+    private String matchJarClassPath(String jarName) {
         //1.com.google.code.gson:gson:2.8.5@jar
         //2.com.google.android.material:material:1.1.0@aar
         //3.gradle-3.4.2
