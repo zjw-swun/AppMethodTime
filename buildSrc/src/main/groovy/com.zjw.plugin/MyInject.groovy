@@ -96,6 +96,16 @@ public class MyInject {
                 pool.removeClassPath(classPath)
             }
         }
+
+        //处理三方库，以gson为例
+        map.each {
+            key,value->
+                if (value.contains("gson-2.8.5")){
+                    println("injectDir:" + value)
+                    modifyJar(new File(value))
+                    return true
+                }
+        }
     }
 
     private static CtClass modifyClass(String className) {
@@ -262,6 +272,7 @@ public class MyInject {
     }
 
     public static File modifyJar(File jarFile) {
+        println("modifyJar:" + jarFile.path)
         ClassPath jarClassPath = pool.appendClassPath(jarFile.path)
         ClassPath androidClassPath = pool.insertClassPath(androidJarPath)
         /**
@@ -309,6 +320,11 @@ public class MyInject {
 //            Log.info("${hexName} is modified");
         jarOutputStream.close();
         file.close();
+
+        String sourcesFile = jarFile.path
+        jarFile.delete()
+        outputJar.renameTo(new File(sourcesFile))
+
         pool.removeClassPath(jarClassPath)
         pool.removeClassPath(androidClassPath)
         return outputJar;
