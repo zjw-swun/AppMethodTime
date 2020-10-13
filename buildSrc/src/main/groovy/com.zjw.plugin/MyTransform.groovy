@@ -129,7 +129,21 @@ class MyTransform extends Transform {
             resourceFiles.each {
                 file ->
                     def component = xmlparser.parse(file)
-                    String relativePath = component.library.CLASSES.root.@url[0] + ""
+                    String[] relativePathList = component.library.CLASSES.root.@url
+                    if (relativePathList == null || relativePathList.length < 1) {
+                        return
+                    }
+                    String relativePath = ""
+                    out:
+                    for (int i = 0; i < relativePathList.length; i++) {
+                        //println(relativePathList[i])
+                        //aar 可能带有file其他资源属性
+                        if (relativePathList[i].startsWith("jar:")){
+                            relativePath = relativePathList[i]
+                            break out
+                        }
+                    }
+
                     int headIndex = relativePath.indexOf(".gradle")
                     int bottomIndex = relativePath.indexOf(".jar")
                     if (headIndex > 0 && bottomIndex > 0) {
@@ -139,7 +153,7 @@ class MyTransform extends Transform {
                         String fixName = name.replace("Gradle: ", "")
                         map.put(fixName, resultPath)
                         //lifecycle-common-2.1.0.jar
-                        println(resultPath)
+                        //println(resultPath)
                         ///Users/hana/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.1.0/c67e7807d9cd6c329b9d0218b2ec4e505dd340b7/lifecycle-common-2.1.0.jar
                     }
 
