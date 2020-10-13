@@ -64,7 +64,7 @@ class MyTransform extends Transform {
             return;
         }
         def androidJarPath = getAndroidJarPath();
-
+        fillJarMap()
         String jarsDir
         // Transform的inputs有两种类型，一种是目录，一种是jar包，要分开遍历
         transformInvocation.inputs.each { TransformInput input ->
@@ -75,6 +75,7 @@ class MyTransform extends Transform {
                 // println("jarInput.file.getAbsolutePath() === " + jarInput.file.getAbsolutePath())
                 // 重命名输出文件（同目录copyFile会冲突）
                 def jarName = jarInput.name
+                matchJarClassPath(jarName)
                 def md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())
                 if (jarName.endsWith(".jar")) {
                     jarName = jarName.substring(0, jarName.length() - 4)
@@ -114,6 +115,75 @@ class MyTransform extends Transform {
             }
 
         }
+    }
+
+    private void fillJarMap(){
+        def librariesRoot = project.rootDir.path + "/.idea/libraries/"
+        def home = System.getProperty("user.home") //  /Users/hana
+        File libraryFile = new File(librariesRoot)
+        File[] resourceFiles
+        if (libraryFile != null && libraryFile.isDirectory()) {
+            resourceFiles = libraryFile.listFiles()
+
+            def xmlparser = new XmlParser()
+            resourceFiles.each {
+                file ->
+                    def component = xmlparser.parse(file)
+                    String relativePath = component.library.CLASSES.root.@url[0] + ""
+                    int headIndex = relativePath.indexOf(".gradle")
+                    int bottomIndex = relativePath.indexOf(".jar")
+                    if (headIndex > 0 && bottomIndex > 0) {
+                        String indexPath = relativePath.substring(headIndex, bottomIndex)
+                        String resultPath = home + "/" + indexPath + ".jar"
+                        String name = component.library.@name[0]
+                        String fixName = name.replace("Gradle: ","")
+                        map.put(fixName,resultPath)
+                        //lifecycle-common-2.1.0.jar
+                        //println(resultPath)
+                        ///Users/hana/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.1.0/c67e7807d9cd6c329b9d0218b2ec4e505dd340b7/lifecycle-common-2.1.0.jar
+                    }
+
+            }
+        }else {
+            println("libraryFile is empty" )
+        }
+    }
+
+    /**
+     * todo 这里可以设置配置指定的jar名称，或者全量
+     * todo 将match result 添加到classpath
+     * */
+    private String matchJarClassPath(String jarName){
+        //1.com.google.code.gson:gson:2.8.5@jar
+        //2.com.google.android.material:material:1.1.0@aar
+        //3.gradle-3.4.2
+        // jarName com.squareup.okio:okio:1.17.2
+        // map key com.google.code.gson:gson:2.8.5@jar
+        println("jarName:" + jarName)
+        String match = ""
+        out:
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (entry.getKey().contains(jarName)) {
+                match = entry.getValue()
+                break out
+            }
+        }
+        /*map.find {
+            entry ->
+                //println(entry.key)
+                //println(entry.value)
+                String index = entry.key.replace("-", ":")
+                        .replace("@jar","")
+                .replace("@aar","")
+                if (jarName.contains(index)) {
+                    match = entry.value
+                    println("match! 000" + entry.value)
+                    return true
+                }
+        }*/
+        println(jarName + " matched!")
+        println("path:" + match)
+
     }
 
     private String getAndroidJarPath() {

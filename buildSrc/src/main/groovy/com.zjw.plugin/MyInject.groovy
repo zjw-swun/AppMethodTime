@@ -21,7 +21,7 @@ public class MyInject {
     static String CostTime = "CostTime";
     static String AppMethodTime = "AppMethodTime";
     static String AppMethodOrder = "AppMethodOrder";
-    static String LogLevel = "e";
+    static String LogLevel = "i";
     static String androidJarPath = "";
     static boolean useCostTime;
     static boolean showLog;
@@ -34,7 +34,7 @@ public class MyInject {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
 
-        //this.path = path
+        //this.path = path  /Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes
         this.useCostTime = useCostTime
         this.showLog = showLog
         //this.aarOrJarPath = aarOrJarPath
