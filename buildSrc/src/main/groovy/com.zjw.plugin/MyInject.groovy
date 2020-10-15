@@ -77,6 +77,7 @@ public class MyInject {
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace()
             }
 
             File dir = new File(path)
@@ -95,11 +96,64 @@ public class MyInject {
                         }
                     }
                 }
+            }else {
+                //增量时是单个文件
+                try {
+                    if (filter(path)){
+                        def incrementalClassRoot = new File(path).getParentFile().absolutePath
+                        String classPath = path
+                        ///Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zjw/appmethodtime/MyApplication.class
+                        String index = "compileDebugJavaWithJavac" + File.separator + "classes" + File.separator
+                        int startPosition = path.indexOf(index)
+                        String className = classPath
+                                .substring(startPosition + index.length())
+                                .replaceAll("/", ".").replace(".class","")
+
+                        //todo 构造出的class内容为空需要解决
+                        CtClass c = modifyMakeClass(className)
+                        if (c != null) {
+                            c.writeFile(incrementalClassRoot)
+                            c.detach()
+                        }
+                    }
+                }catch(Throwable e){
+                    e.printStackTrace()
+                }
             }
             classPathArrayList.forEach { ClassPath classPath ->
                 pool.removeClassPath(classPath)
             }
         }
+    }
+
+    private static CtClass modifyMakeClass(String fullClassName) {
+        // String path
+        //开始修改class文件
+        CtClass c = pool.makeClass(fullClassName)
+        if (c.isFrozen()) {
+            c.defrost()
+        }
+        // pool.importPackage(myPackageName)
+        //c.getMethod("setDname", "(Ljava/lang/String;)V") 指定函数名和参数获取函数对象
+        //遍历类的所有方法
+        CtMethod[] methods = c.getDeclaredMethods();
+        for (CtMethod method : methods) {
+            if (method.isEmpty() || Modifier.isNative(method.getModifiers())) {
+                //空函数体有可能是抽象函数以及接口函数或者native方法
+                return null
+            }
+            if (useCostTime
+                    && method.getAvailableAnnotations() != null
+                    && method.getAvailableAnnotations().length >= 1
+                    && "${method.getAvailableAnnotations()[0]}".contains(CostTime)) {
+                insertCostTimeCode(method, c, showLog)
+            } else if (!useCostTime) {
+                insertCostTimeCode(method, c, showLog)
+            }
+        }//END   for (CtMethod method : methods)
+        // c.writeFile(path)
+        // c.detach()
+        return c
     }
 
     private static CtClass modifyClass(String className) {
