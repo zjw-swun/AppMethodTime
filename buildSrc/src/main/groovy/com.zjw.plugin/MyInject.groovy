@@ -59,11 +59,17 @@ public class MyInject {
                 return
             }
             ArrayList<ClassPath> classPathArrayList = new ArrayList<>()
-            if (path.endsWith(".class")){
-                //增量
-                def incrementalClassRoot = new File(path).getParentFile().absolutePath
-                classPathArrayList.add(pool.appendClassPath(incrementalClassRoot))
-            }else {
+            if (path.endsWith(".class")) {
+                try {
+                    //增量
+                    String classesPath = path.split(File.separator + "classes" + File.separator)[0] + File.separator + "classes"
+                    classPathArrayList.add(pool.appendClassPath(classesPath))
+                } catch (Throwable e) {
+                    if (showLog) {
+                        e.printStackTrace()
+                    }
+                }
+            } else {
                 classPathArrayList.add(pool.appendClassPath(path))
             }
             classPathArrayList.add(pool.appendClassPath(androidJarPath))
@@ -102,27 +108,29 @@ public class MyInject {
                         }
                     }
                 }
-            }else {
+            } else {
                 //增量时是单个文件
                 try {
-                    if (filter(path)){
-                        def incrementalClassRoot = new File(path).getParentFile().absolutePath
+                    if (filter(path)) {
+                        String classesPath = path.split(File.separator + "classes" + File.separator)[0] + File.separator + "classes"
                         String classPath = path
                         ///Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zjw/appmethodtime/MyApplication.class
-                        String index = "compileDebugJavaWithJavac" + File.separator + "classes" + File.separator
+                        String index = File.separator + "classes" + File.separator
                         int startPosition = path.indexOf(index)
                         String className = classPath
                                 .substring(startPosition + index.length())
-                                .replaceAll("/", ".").replace(".class","")
+                                .replaceAll("/", ".").replace(".class", "")
 
                         CtClass c = modifyClass(className)
                         if (c != null) {
-                            c.writeFile(incrementalClassRoot)
+                            c.writeFile(classesPath)
                             c.detach()
                         }
                     }
-                }catch(Throwable e){
-                    e.printStackTrace()
+                } catch (Throwable e) {
+                    if (showLog) {
+                        e.printStackTrace()
+                    }
                 }
             }
             classPathArrayList.forEach { ClassPath classPath ->
