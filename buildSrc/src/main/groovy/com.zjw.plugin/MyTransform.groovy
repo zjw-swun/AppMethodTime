@@ -1,5 +1,6 @@
 package com.zjw.plugin
 
+import com.android.SdkConstants
 import com.android.annotations.NonNull
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
@@ -7,6 +8,8 @@ import com.google.common.collect.Sets
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
+
+import java.nio.file.Files
 
 class MyTransform extends Transform {
     Project project
@@ -33,7 +36,7 @@ class MyTransform extends Transform {
                 //处理三方库，以gson为例
                 map.each {
                     key, value ->
-                        if (value.contains("gson-2.8.5")) {
+                        if (value.contains("gson-2.8.6")) {
                             println("injectDir:" + value)
                             jarPath = value
                             return true
@@ -50,7 +53,7 @@ class MyTransform extends Transform {
                 fillJarMap()
                 map.each {
                     key, value ->
-                        if (value.contains("gson-2.8.5")) {
+                        if (value.contains("gson-2.8.6")) {
                             println("delete injectDir:" + value)
                             def libFile = new File(value)
                             if (libFile.exists()) {
@@ -91,18 +94,20 @@ class MyTransform extends Transform {
 
     @Override
     public boolean isIncremental() {
-        return false;
+        return true;
     }
 
     @Override
     public void transform(@NonNull TransformInvocation transformInvocation)
             throws TransformException, InterruptedException, IOException {
         if (!project.AppMethodTime.enabled) {
-            return;
+            return
         }
-        def androidJarPath = getAndroidJarPath();
-        fillJarMap()
         String jarsDir
+        fillJarMap()
+        if (!transformInvocation.incremental) {
+            transformInvocation.outputProvider.deleteAll()
+        }
         // Transform的inputs有两种类型，一种是目录，一种是jar包，要分开遍历
         transformInvocation.inputs.each { TransformInput input ->
             //对类型为jar文件的input进行遍历
@@ -111,23 +116,23 @@ class MyTransform extends Transform {
                 // （也就是主项目build.gradle中 dependencies下 compile的东西）
                 // println("jarInput.file.getAbsolutePath() === " + jarInput.file.getAbsolutePath())
                 // 重命名输出文件（同目录copyFile会冲突）
-                def jarName = jarInput.name
-                matchJarClassPath(jarName)
-                def md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())
-                if (jarName.endsWith(".jar")) {
-                    jarName = jarName.substring(0, jarName.length() - 4)
-                    // println("jarName substring is " + jarName)
+                if (transformInvocation.isIncremental()) {
+                    switch (jarInput.getStatus()) {
+                        case Status.NOTCHANGED:
+                            break
+                        case Status.ADDED:
+                            incrementalJar(transformInvocation, jarInput, jarsDir)
+                            break
+                        case Status.CHANGED:
+                            //更改的jar是插桩过后的产物，忽略之
+                            break
+                        case Status.REMOVED:
+                            MyFileUtils.delete(outputJar)
+                            break
+                    }
+                } else {
+                    incrementalJar(transformInvocation, jarInput, jarsDir)
                 }
-                //生成输出路径
-                def dest = transformInvocation.outputProvider.getContentLocation(jarName + md5Name,
-                        jarInput.contentTypes, jarInput.scopes, Format.JAR)
-
-                //AppMethodTime\app\build\intermediates\transforms\MyTrans\debug\jars 拼凑这个目录
-                jarsDir = dest.absolutePath.split("jars")[0] + "jars";
-                // println("dest === " + dest.absolutePath)
-
-                //将输入内容复制到输出
-                FileUtils.copyFile(jarInput.file, dest)
             }
 
 
@@ -136,22 +141,90 @@ class MyTransform extends Transform {
                 //文件夹里面包含的是我们手写的类以及R.class、BuildConfig.class以及R$XXX.class等
 
                 // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                MyInject.injectDir(androidJarPath, directoryInput.file.absolutePath, jarsDir, map,
-                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
-                // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-                // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
-                // 获取output目录
-                def dest = transformInvocation.outputProvider.getContentLocation(directoryInput.name,
-                        directoryInput.contentTypes, directoryInput.scopes,
-                        Format.DIRECTORY)
-                //println("directoryInput.file =============" + directoryInput.file);
-                // println("dest.name =============" + dest.name);
+                File inputDir = directoryInput.getFile()
+                File outputDir =
+                        transformInvocation.getOutputProvider().getContentLocation(
+                                directoryInput.getName(),
+                                directoryInput.getContentTypes(),
+                                directoryInput.getScopes(),
+                                Format.DIRECTORY)
 
-                // 将input的目录复制到output指定目录
-                FileUtils.copyDirectory(directoryInput.file, dest)
+                if (transformInvocation.isIncremental()) {
+                    for (Map.Entry<File, Status> entry : directoryInput.getChangedFiles().entrySet()) {
+                        File inputFile = entry.getKey()
+                        println("directoryInputs transformInvocation incremental file:" + inputFile.name)
+                        switch (entry.getValue()) {
+                            case Status.NOTCHANGED:
+                                break
+                            case Status.ADDED:
+                            case Status.CHANGED:
+                                transformInvocation.getOutputProvider()
+                                if (!inputFile.isDirectory()
+                                        && inputFile.getName()
+                                        .endsWith(SdkConstants.DOT_CLASS)) {
+                                    incrementalDirectory(transformInvocation, directoryInput, inputFile, jarsDir)
+                                }
+                                break
+                            case Status.REMOVED:
+                                File outputFile = toOutputFile(outputDir, inputDir, inputFile);
+                                MyFileUtils.deleteIfExists(outputFile)
+                                break
+                        }
+                    }
+                } else {
+                    println("directoryInputs transformInvocation incremental false")
+                    incrementalDirectory(transformInvocation, directoryInput, directoryInput.file, jarsDir)
+                    /*for (File file in MyFileUtils.getAllFiles(inputDir)) {
+                        if (file.getName().endsWith(SdkConstants.DOT_CLASS)) {
+                            incrementalDirectory(transformInvocation, directoryInput, file, jarsDir)
+                        }
+                    }*/
+                }
+
             }
 
         }
+    }
+
+    private void incrementalDirectory(TransformInvocation transformInvocation, DirectoryInput directoryInput, File file, String jarsDir){
+        println("====incrementalDirectory====")
+        def androidJarPath = getAndroidJarPath()
+        MyInject.injectDir(androidJarPath, file.absolutePath, jarsDir, map,
+                project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
+        // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
+        // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
+        // 获取output目录
+        def dest = transformInvocation.outputProvider.getContentLocation(directoryInput.name,
+                directoryInput.contentTypes, directoryInput.scopes,
+                Format.DIRECTORY)
+        //println("directoryInput.file =============" + directoryInput.file);
+        // println("dest.name =============" + dest.name);
+
+        // 将input的目录复制到output指定目录
+        FileUtils.copyDirectory(directoryInput.file, dest)
+    }
+
+    private static void incrementalJar(TransformInvocation transformInvocation, JarInput jarInput, String jarsDir){
+        def jarName = jarInput.name
+        def md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())
+        if (jarName.endsWith(".jar")) {
+            jarName = jarName.substring(0, jarName.length() - 4)
+            // println("jarName substring is " + jarName)
+        }
+        //生成输出路径
+        def dest = transformInvocation.outputProvider.getContentLocation(jarName + md5Name,
+                jarInput.contentTypes, jarInput.scopes, Format.JAR)
+
+        //AppMethodTime\app\build\intermediates\transforms\MyTrans\debug\jars 拼凑这个目录
+        jarsDir = dest.absolutePath.split("jars")[0] + "jars"
+        // println("dest === " + dest.absolutePath)
+
+        //将输入内容复制到输出
+        FileUtils.copyFile(jarInput.file, dest)
+    }
+
+    private static File toOutputFile(File outputDir, File inputDir, File inputFile) {
+        return new File(outputDir, MyFileUtils.relativePossiblyNonExistingPath(inputFile, inputDir))
     }
 
     private void fillJarMap() {

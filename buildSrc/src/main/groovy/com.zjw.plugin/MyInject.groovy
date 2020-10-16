@@ -59,7 +59,13 @@ public class MyInject {
                 return
             }
             ArrayList<ClassPath> classPathArrayList = new ArrayList<>()
-            classPathArrayList.add(pool.appendClassPath(path))
+            if (path.endsWith(".class")){
+                //增量
+                def incrementalClassRoot = new File(path).getParentFile().absolutePath
+                classPathArrayList.add(pool.appendClassPath(incrementalClassRoot))
+            }else {
+                classPathArrayList.add(pool.appendClassPath(path))
+            }
             classPathArrayList.add(pool.appendClassPath(androidJarPath))
 
             try {
@@ -77,6 +83,7 @@ public class MyInject {
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace()
             }
 
             File dir = new File(path)
@@ -94,6 +101,28 @@ public class MyInject {
                             c.detach()
                         }
                     }
+                }
+            }else {
+                //增量时是单个文件
+                try {
+                    if (filter(path)){
+                        def incrementalClassRoot = new File(path).getParentFile().absolutePath
+                        String classPath = path
+                        ///Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes/com/zjw/appmethodtime/MyApplication.class
+                        String index = "compileDebugJavaWithJavac" + File.separator + "classes" + File.separator
+                        int startPosition = path.indexOf(index)
+                        String className = classPath
+                                .substring(startPosition + index.length())
+                                .replaceAll("/", ".").replace(".class","")
+
+                        CtClass c = modifyClass(className)
+                        if (c != null) {
+                            c.writeFile(incrementalClassRoot)
+                            c.detach()
+                        }
+                    }
+                }catch(Throwable e){
+                    e.printStackTrace()
                 }
             }
             classPathArrayList.forEach { ClassPath classPath ->
