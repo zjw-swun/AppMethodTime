@@ -150,7 +150,6 @@ class MyTransform extends Transform {
                                 Format.DIRECTORY)
 
                 if (transformInvocation.isIncremental()) {
-                    println("directoryInputs transformInvocation incremental")
                     for (Map.Entry<File, Status> entry : directoryInput.getChangedFiles().entrySet()) {
                         File inputFile = entry.getKey()
                         println("directoryInputs transformInvocation incremental file:" + inputFile.name)
@@ -159,7 +158,6 @@ class MyTransform extends Transform {
                                 break
                             case Status.ADDED:
                             case Status.CHANGED:
-                                //todo 需要解决重复打点的问题，可通过method内容进行处理
                                 transformInvocation.getOutputProvider()
                                 if (!inputFile.isDirectory()
                                         && inputFile.getName()
