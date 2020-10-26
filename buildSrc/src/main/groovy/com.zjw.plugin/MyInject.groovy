@@ -7,6 +7,8 @@ import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.http.util.TextUtils
+import org.gradle.api.Project
+
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
@@ -25,20 +27,25 @@ public class MyInject {
     static String androidJarPath = "";
     static boolean useCostTime;
     static boolean showLog;
+    static boolean enableOrder;
+    static double limitTime = -1;
+    static double warringTime = 16;
 
     // 存储文件列表
     private static ArrayList<String> fileList = new ArrayList<>();
 
 
     public static void injectDir(String androidJarPath, String path, String jarsPath, HashMap<String, String> map,
-                                 boolean useCostTime, boolean showLog, String aarOrJarPath, String buildType) {
+                                 Project project, String aarOrJarPath, String buildType) {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
-
         //this.path = path  /Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes
-        this.useCostTime = useCostTime
-        this.showLog = showLog
-        //this.aarOrJarPath = aarOrJarPath
+        useCostTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).useCostTime
+        showLog =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).showLog
+        enableOrder =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).enableOrder
+        limitTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).limitTimeMilli
+        warringTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).warringTimeMilli
+
         this.androidJarPath = androidJarPath
         File tragetFile = new File(aarOrJarPath)
         if (!TextUtils.isEmpty(aarOrJarPath)) {
@@ -206,6 +213,7 @@ public class MyInject {
         method.addLocalVariable("_lineNumber", CtClass.intType);
         method.addLocalVariable("_info", StringType);
         method.addLocalVariable("_limit", StringType);
+        method.addLocalVariable("_cost", CtClass.doubleType);
         if (showLog) {
             println("   long   _startTime;")
             println("   long   _endTime;")
@@ -215,6 +223,7 @@ public class MyInject {
             println("   String _lineNumber;")
             println("   String _info;")
             println("   String _limit;")
+            println("   double _cost;")
         }
 
         def lineNumber = method.methodInfo.getLineNumber(0);
@@ -226,12 +235,14 @@ public class MyInject {
         startInjectStr.append("     _methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
         startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
         startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
-        startInjectStr.append("     android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
-        startInjectStr.append("     _info +\": ");
-        for (int i = 0; i < paramNameList.size(); i++) {
-            startInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
+        if (enableOrder){
+            startInjectStr.append("     android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
+            startInjectStr.append("     _info +\": ");
+            for (int i = 0; i < paramNameList.size(); i++) {
+                startInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
+            }
+            startInjectStr.append(" \"); ")
         }
-        startInjectStr.append(" \"); ")
         //startInjectStr.append("\n     Thread.dumpStack();");
         try {
             method.insertBefore(startInjectStr.toString())
@@ -249,14 +260,31 @@ public class MyInject {
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
         endInjectStr.append("   _endTime = System.nanoTime();\n");
-        endInjectStr.append("   _limit = ((_endTime - _startTime)*1.0f/1000000) >= 300 ? \" 警告>=300毫秒 \" : \"\" ;\n");
-        endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
-        endInjectStr.append("_info + \": \" + _limit + \"\"");
-        endInjectStr.append("+(_endTime - _startTime)*1.0f/1000000+\" (毫秒) return is \"+\$_ +\" ");
-        for (int i = 0; i < paramNameList.size(); i++) {
-            endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
+        endInjectStr.append("   _cost = (_endTime - _startTime)*1.0f/1000000;\n");
+        endInjectStr.append("   _limit = _cost >= ${warringTime} ? \" 警告>=${warringTime}毫秒 \" : \"\" ;\n");
+
+        if (limitTime > 0) {
+            endInjectStr.append("   if(${limitTime} >= _cost){");
+
+            endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
+            endInjectStr.append("_info + \": \" + _limit + \"\"");
+            endInjectStr.append("+_cost+\" (毫秒) return is \"+\$_ +\" ");
+            for (int i = 0; i < paramNameList.size(); i++) {
+                endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
+            }
+            endInjectStr.append(" \"); ");
+
+            endInjectStr.append("}");
+        }else {
+            endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
+            endInjectStr.append("_info + \": \" + _limit + \"\"");
+            endInjectStr.append("+_cost+\" (毫秒) return is \"+\$_ +\" ");
+            for (int i = 0; i < paramNameList.size(); i++) {
+                endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
+            }
+            endInjectStr.append(" \"); ");
         }
-        endInjectStr.append(" \"); ");
+
         // endInjectStr.append("\n     Thread.dumpStack();");
         try {
             method.insertAfter(endInjectStr.toString())

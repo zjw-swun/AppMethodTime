@@ -24,7 +24,7 @@ class MyTransform extends Transform {
         project.task('appMethodJarOrAar') {
             doLast {
                 MyInject.injectDir(getAndroidJarPath(), "", "", map,
-                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
+                        project, project.AppMethodTime.aarOrJarPath, buildType)
             }
         }
 
@@ -43,7 +43,7 @@ class MyTransform extends Transform {
                         }
                 }
                 MyInject.injectDir(getAndroidJarPath(), ".idea", jarPath, map,
-                        project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, "", buildType)
+                        project, "", buildType)
             }
         }
 
@@ -103,7 +103,7 @@ class MyTransform extends Transform {
         if (!project.AppMethodTime.enabled) {
             return
         }
-        String jarsDir
+        String jarsDir = ""
         fillJarMap()
         if (!transformInvocation.incremental) {
             transformInvocation.outputProvider.deleteAll()
@@ -152,7 +152,7 @@ class MyTransform extends Transform {
                 if (transformInvocation.isIncremental()) {
                     for (Map.Entry<File, Status> entry : directoryInput.getChangedFiles().entrySet()) {
                         File inputFile = entry.getKey()
-                        println("directoryInputs transformInvocation incremental file:" + inputFile.name)
+                       // println("directoryInputs transformInvocation incremental file:" + inputFile.name)
                         switch (entry.getValue()) {
                             case Status.NOTCHANGED:
                                 break
@@ -172,7 +172,7 @@ class MyTransform extends Transform {
                         }
                     }
                 } else {
-                    println("directoryInputs transformInvocation incremental false")
+                   // println("directoryInputs transformInvocation incremental false")
                     incrementalDirectory(transformInvocation, directoryInput, directoryInput.file, jarsDir)
                     /*for (File file in MyFileUtils.getAllFiles(inputDir)) {
                         if (file.getName().endsWith(SdkConstants.DOT_CLASS)) {
@@ -187,12 +187,11 @@ class MyTransform extends Transform {
     }
 
     private void incrementalDirectory(TransformInvocation transformInvocation, DirectoryInput directoryInput, File file, String jarsDir){
-        println("====incrementalDirectory====")
+        //println("====incrementalDirectory====")
         def androidJarPath = getAndroidJarPath()
         MyInject.injectDir(androidJarPath, file.absolutePath, jarsDir, map,
-                project.AppMethodTime.useCostTime, project.AppMethodTime.showLog, project.AppMethodTime.aarOrJarPath, buildType)
+                project, project.AppMethodTime.aarOrJarPath, buildType)
         // directoryInput.file =============D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
-        // dest.name =============bb2a44c10a4b1f1ea8a3f7b22453e3a96aa0d55d
         // 获取output目录
         def dest = transformInvocation.outputProvider.getContentLocation(directoryInput.name,
                 directoryInput.contentTypes, directoryInput.scopes,
@@ -216,7 +215,7 @@ class MyTransform extends Transform {
                 jarInput.contentTypes, jarInput.scopes, Format.JAR)
 
         //AppMethodTime\app\build\intermediates\transforms\MyTrans\debug\jars 拼凑这个目录
-        jarsDir = dest.absolutePath.split("jars")[0] + "jars"
+        //jarsDir = dest.absolutePath.split("jars")[0] + "jars"
         // println("dest === " + dest.absolutePath)
 
         //将输入内容复制到输出
@@ -229,7 +228,7 @@ class MyTransform extends Transform {
 
     private void fillJarMap() {
         def librariesRoot = project.rootDir.path + "${File.separator}.idea${File.separator}libraries${File.separator}"
-        def home = System.getProperty("user.home") //  /Users/hana
+        def home = System.getProperty("user.home")
         File libraryFile = new File(librariesRoot)
         File[] resourceFiles
         if (libraryFile != null && libraryFile.isDirectory()) {
@@ -283,7 +282,7 @@ class MyTransform extends Transform {
         //3.gradle-3.4.2
         // jarName com.squareup.okio:okio:1.17.2
         // map key com.google.code.gson:gson:2.8.5@jar
-        println("jarName:" + jarName)
+       // println("jarName:" + jarName)
         String match = ""
         out:
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -305,8 +304,8 @@ class MyTransform extends Transform {
                     return true
                 }
         }*/
-        println(jarName + " matched!")
-        println("path:" + match)
+        //println(jarName + " matched!")
+        //println("path:" + match)
 
     }
 
