@@ -264,7 +264,7 @@ public class MyInject {
         endInjectStr.append("   _limit = _cost >= ${warringTime} ? \" 警告>=${warringTime}毫秒 \" : \"\" ;\n");
 
         if (limitTime > 0) {
-            endInjectStr.append("   if(${limitTime} >= _cost){");
+            endInjectStr.append("   if(${limitTime} <= _cost){");
 
             endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
             endInjectStr.append("_info + \": \" + _limit + \"\"");
