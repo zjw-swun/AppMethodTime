@@ -34,7 +34,7 @@ dependencies {
 }
 
 
-version = "1.0.0"    //配置插件的版本号
+version = "1.0.1"    //配置插件的版本号
 group = "com.zjw.plugin"   //插件的群组，插件的classpath会用到
 
 pluginBundle {
@@ -43,12 +43,12 @@ pluginBundle {
     website = 'https://github.com/zjw-swun/'
     vcsUrl = 'https://github.com/zjw-swun/AppMethodTime'
     description = 'AppMethodTime'  //插件描述
-    tags = ['AppMethodTime', 'javassist']  //插件的tag。可以通过这个在插件门户上搜索
+    tags = ['AppMethodTime', 'javassist','Android', 'Gradle', 'plugin']  //插件的tag。可以通过这个在插件门户上搜索
 
     plugins {
         greetingsPlugin {
             id = 'com.zjw.plugin.appmethodtime'   //插件的id，到时候apply的插件id
-            displayName = 'AppMethodTime plugin'
+            displayName = 'AppMethodTime'
         }
     }
 }
