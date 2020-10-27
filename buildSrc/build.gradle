@@ -6,11 +6,23 @@ buildscript {
 }
 
 apply plugin: 'groovy'
+apply plugin: "com.gradle.plugin-publish"
 
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.gradle.publish:plugin-publish-plugin:0.12.0"
+    }
+}
 repositories {
     repositories {
         google()
         jcenter()
+        mavenCentral()
     }
 }
 
@@ -19,6 +31,26 @@ dependencies {
     implementation localGroovy()
     implementation 'com.android.tools.build:gradle:3.4.2'
     implementation 'org.javassist:javassist:3.27.0-GA'
+}
+
+
+version = "1.0.0"    //配置插件的版本号
+group = "com.zjw.plugin"   //插件的群组，插件的classpath会用到
+
+pluginBundle {
+    //'com.zjw.plugin:appmethodtime:1.0.0'
+    //https://github.com/zjw-swun/AppMethodTime
+    website = 'https://github.com/zjw-swun/'
+    vcsUrl = 'https://github.com/zjw-swun/AppMethodTime'
+    description = 'AppMethodTime'  //插件描述
+    tags = ['AppMethodTime', 'javassist']  //插件的tag。可以通过这个在插件门户上搜索
+
+    plugins {
+        greetingsPlugin {
+            id = 'com.zjw.plugin.appmethodtime'   //插件的id，到时候apply的插件id
+            displayName = 'AppMethodTime plugin'
+        }
+    }
 }
 
 
