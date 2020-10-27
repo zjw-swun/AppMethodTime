@@ -15,7 +15,8 @@ class MyTransform extends Transform {
     Project project
     String buildType
     boolean isLib
-    HashMap<String, String> map = new HashMap<>()
+    static HashMap<String, String> map = new HashMap<>()
+    static String jarsDir = ""
     // 构造函数，我们将Project保存下来备用
     public MyTransform(Project project, String buildType, boolean isLib) {
         this.project = project
@@ -103,7 +104,6 @@ class MyTransform extends Transform {
         if (!project.AppMethodTime.enabled) {
             return
         }
-        String jarsDir = ""
         fillJarMap()
         if (!transformInvocation.incremental) {
             transformInvocation.outputProvider.deleteAll()
@@ -121,7 +121,7 @@ class MyTransform extends Transform {
                         case Status.NOTCHANGED:
                             break
                         case Status.ADDED:
-                            incrementalJar(transformInvocation, jarInput, jarsDir)
+                            incrementalJar(transformInvocation, jarInput)
                             break
                         case Status.CHANGED:
                             //更改的jar是插桩过后的产物，忽略之
@@ -131,7 +131,7 @@ class MyTransform extends Transform {
                             break
                     }
                 } else {
-                    incrementalJar(transformInvocation, jarInput, jarsDir)
+                    incrementalJar(transformInvocation, jarInput)
                 }
             }
 
@@ -162,7 +162,7 @@ class MyTransform extends Transform {
                                 if (!inputFile.isDirectory()
                                         && inputFile.getName()
                                         .endsWith(SdkConstants.DOT_CLASS)) {
-                                    incrementalDirectory(transformInvocation, directoryInput, inputFile, jarsDir)
+                                    incrementalDirectory(transformInvocation, directoryInput, inputFile)
                                 }
                                 break
                             case Status.REMOVED:
@@ -173,10 +173,10 @@ class MyTransform extends Transform {
                     }
                 } else {
                    // println("directoryInputs transformInvocation incremental false")
-                    incrementalDirectory(transformInvocation, directoryInput, directoryInput.file, jarsDir)
+                    incrementalDirectory(transformInvocation, directoryInput, directoryInput.file)
                     /*for (File file in MyFileUtils.getAllFiles(inputDir)) {
                         if (file.getName().endsWith(SdkConstants.DOT_CLASS)) {
-                            incrementalDirectory(transformInvocation, directoryInput, file, jarsDir)
+                            incrementalDirectory(transformInvocation, directoryInput, file)
                         }
                     }*/
                 }
@@ -186,7 +186,7 @@ class MyTransform extends Transform {
         }
     }
 
-    private void incrementalDirectory(TransformInvocation transformInvocation, DirectoryInput directoryInput, File file, String jarsDir){
+    private void incrementalDirectory(TransformInvocation transformInvocation, DirectoryInput directoryInput, File file){
         //println("====incrementalDirectory====")
         def androidJarPath = getAndroidJarPath()
         MyInject.injectDir(androidJarPath, file.absolutePath, jarsDir, map,
@@ -203,7 +203,7 @@ class MyTransform extends Transform {
         FileUtils.copyDirectory(directoryInput.file, dest)
     }
 
-    private static void incrementalJar(TransformInvocation transformInvocation, JarInput jarInput, String jarsDir){
+    private static void incrementalJar(TransformInvocation transformInvocation, JarInput jarInput){
         def jarName = jarInput.name
         def md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())
         if (jarName.endsWith(".jar")) {
@@ -214,10 +214,9 @@ class MyTransform extends Transform {
         def dest = transformInvocation.outputProvider.getContentLocation(jarName + md5Name,
                 jarInput.contentTypes, jarInput.scopes, Format.JAR)
 
-        //AppMethodTime\app\build\intermediates\transforms\MyTrans\debug\jars 拼凑这个目录
-        //jarsDir = dest.absolutePath.split("jars")[0] + "jars"
+       // dest === /Users/zjw/StudioProjects/AppMethodTime/app/build/intermediates/transforms/MyTrans/debug/0.jar
         // println("dest === " + dest.absolutePath)
-
+        jarsDir = dest.parentFile.absolutePath
         //将输入内容复制到输出
         FileUtils.copyFile(jarInput.file, dest)
     }

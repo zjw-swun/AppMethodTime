@@ -83,10 +83,10 @@ public class MyInject {
 
             try {
                 //加载gradle指定依赖
-                for (Map.Entry<String, String> entry : map.entrySet()) {
+                /*for (Map.Entry<String, String> entry : map.entrySet()) {
                     classPathArrayList.add(pool.appendClassPath(entry.value))
-                }
-                //编译顺序：先编译lib库再编译主项目
+                }*/
+
                 //所以需要加载依赖的lib jar
                 File libJarDir = new File(jarsPath)
                 if (libJarDir.exists() && libJarDir.isDirectory()) {
@@ -213,7 +213,7 @@ public class MyInject {
         method.addLocalVariable("_lineNumber", CtClass.intType);
         method.addLocalVariable("_info", StringType);
         method.addLocalVariable("_limit", StringType);
-        method.addLocalVariable("_cost", CtClass.doubleType);
+        method.addLocalVariable("_cost", CtClass.floatType);
         if (showLog) {
             println("   long   _startTime;")
             println("   long   _endTime;")
@@ -223,7 +223,7 @@ public class MyInject {
             println("   String _lineNumber;")
             println("   String _info;")
             println("   String _limit;")
-            println("   double _cost;")
+            println("   float _cost;")
         }
 
         def lineNumber = method.methodInfo.getLineNumber(0);
