@@ -6,6 +6,7 @@ buildscript {
 }
 
 apply plugin: 'groovy'
+apply plugin: 'maven'
 apply plugin: "com.gradle.plugin-publish"
 
 buildscript {
@@ -33,6 +34,15 @@ dependencies {
     implementation 'org.javassist:javassist:3.27.0-GA'
 }
 
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: uri('../repo'))
+        pom.groupId = 'com.zjw.plugin'//包名
+        pom.artifactId = 'AppMethodTime'//在需要引用插件时用到
+        pom.version = '1.0.1'
+    }
+}
 
 version = "1.0.1"    //配置插件的版本号
 group = "com.zjw.plugin"   //插件的群组，插件的classpath会用到

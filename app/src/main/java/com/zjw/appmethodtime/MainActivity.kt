@@ -1,6 +1,7 @@
 package com.zjw.appmethodtime
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -11,9 +12,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @CostTime
     override fun onCreate(savedInstanceState: Bundle?) {
+        val startTime = System.nanoTime()
         super.onCreate(savedInstanceState)
         super.setContentView(R.layout.activity_main)
         initView()
+        val endTime = System.nanoTime()
+        Log.i("TAG","onCreate cost is "+(endTime - startTime)/1000000f)
     }
 
     @CostTime

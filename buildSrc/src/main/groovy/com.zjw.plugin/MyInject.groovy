@@ -180,7 +180,7 @@ public class MyInject {
         filePath.endsWith(".class") && !filePath.contains('R$') && !filePath.contains('R.class') && !filePath.contains("BuildConfig.class") && !filePath.contains("CostTime") && !filePath.contains("Manifest")
     }
 
-    private static void insertCostTimeCode(CtMethod method, CtClass c, boolean showLog) {
+    private static void insertCostTimeCode(CtMethod method, CtClass ctClass, boolean showLog) {
         if (showLog) {
             println("\n==================  InsertCostTimeCode Start =======================")
             println(method.longName + "{")
@@ -214,25 +214,14 @@ public class MyInject {
         method.addLocalVariable("_info", StringType);
         method.addLocalVariable("_limit", StringType);
         method.addLocalVariable("_cost", CtClass.floatType);
-        if (showLog) {
-            println("   long   _startTime;")
-            println("   long   _endTime;")
-            println("   String _fullClassName;")
-            println("   String _className;")
-            println("   String _methodName;")
-            println("   String _lineNumber;")
-            println("   String _info;")
-            println("   String _limit;")
-            println("   float _cost;")
-        }
 
         def lineNumber = method.methodInfo.getLineNumber(0);
         //插入到函数第一句
         StringBuilder startInjectStr = new StringBuilder();
         startInjectStr.append("     _startTime = System.nanoTime();\n");
-        startInjectStr.append("     _fullClassName = Thread.currentThread().getStackTrace()[2].getClassName();\n");
-        startInjectStr.append("     _className = _fullClassName.substring(_fullClassName.lastIndexOf(\".\") + 1)+\".java\";\n");
-        startInjectStr.append("     _methodName = Thread.currentThread().getStackTrace()[2].getMethodName();\n");
+        startInjectStr.append("""     _fullClassName   = "${ctClass.getName()}";"""+"\n");
+        startInjectStr.append("""     _className =  "${ctClass.getSimpleName()}.java";"""+"\n");
+        startInjectStr.append("""     _methodName = "${method.getName()}";"""+"\n");
         startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
         startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
         if (enableOrder){
@@ -252,10 +241,6 @@ public class MyInject {
             }
         }
         //  println("方法第一句插入了：" + startInjectStr.toString() + "语句")
-        if (showLog) {
-            println(startInjectStr.toString())
-            println("   <<<==== original code ====>>>   ")
-        }
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
@@ -294,8 +279,7 @@ public class MyInject {
             }
         }
         if (showLog) {
-            println(endInjectStr.toString())
-            println("}");
+            //println(endInjectStr.toString())
             println("==================  InsertCostTimeCode End =======================\n")
         }
     }
