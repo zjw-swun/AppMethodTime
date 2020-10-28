@@ -82,9 +82,11 @@ dependencies {
 /**
  * 需要在执行 ssembleDebug Task 之前挂载 lintDebug
  */
+/*
 project.afterEvaluate {
     def assembleDebugTask = project.tasks.find { it.name == 'assembleDebug' }
     def lintTask = project.tasks.find { it.name == 'lintDebug' }
     assembleDebugTask.dependsOn(lintTask)
 }
+*/
 

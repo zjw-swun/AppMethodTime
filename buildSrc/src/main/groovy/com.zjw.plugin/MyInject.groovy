@@ -28,11 +28,11 @@ public class MyInject {
     static boolean useCostTime;
     static boolean showLog;
     static boolean enableOrder;
-    static double limitTime = -1;
-    static double warringTime = 16;
+    static float limitTime = -1;
+    static float warringTime = 16;
 
     // 存储文件列表
-    private static ArrayList<String> fileList = new ArrayList<>();
+    private static ArrayList<String> fileList = new ArrayList<>()
 
 
     public static void injectDir(String androidJarPath, String path, String jarsPath, HashMap<String, String> map,
@@ -40,11 +40,11 @@ public class MyInject {
         //path is D:\GitBlit\AppMethodTime\app\build\intermediates\classes\debug
         //gradle 4.5.1 之后 path is D:\Github\AppMethodTime\app\build\intermediates\javac\debug\compileDebugJavaWithJavac\classes
         //this.path = path  /Users/hana/StudioProjects/AppMethodTime/app/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes
-        useCostTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).useCostTime
-        showLog =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).showLog
-        enableOrder =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).enableOrder
-        limitTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).limitTimeMilli
-        warringTime =  (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).warringTimeMilli
+        useCostTime = (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).useCostTime
+        showLog = (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).showLog
+        enableOrder = (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).enableOrder
+        limitTime = (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).limitTimeMilli
+        warringTime = (project.extensions.getByName("AppMethodTime") as MyCustomPluginExtension).warringTimeMilli
 
         this.androidJarPath = androidJarPath
         File tragetFile = new File(aarOrJarPath)
@@ -207,26 +207,28 @@ public class MyInject {
         def StringType = pool.getCtClass("java.lang.String");
         method.addLocalVariable("_startTime", CtClass.longType);
         method.addLocalVariable("_endTime", CtClass.longType);
-        method.addLocalVariable("_fullClassName", StringType);
-        method.addLocalVariable("_className", StringType);
-        method.addLocalVariable("_methodName", StringType);
-        method.addLocalVariable("_lineNumber", CtClass.intType);
-        method.addLocalVariable("_info", StringType);
-        method.addLocalVariable("_limit", StringType);
-        method.addLocalVariable("_cost", CtClass.floatType);
+        //  method.addLocalVariable("_fullClassName", StringType);
+        // method.addLocalVariable("_className", StringType);
+        // method.addLocalVariable("_methodName", StringType);
+        //   method.addLocalVariable("_lineNumber", CtClass.intType);
+        //   method.addLocalVariable("_info", StringType);
+        //  method.addLocalVariable("_limit", StringType);
+        //    method.addLocalVariable("_cost", CtClass.floatType);
 
         def lineNumber = method.methodInfo.getLineNumber(0);
         //插入到函数第一句
         StringBuilder startInjectStr = new StringBuilder();
         startInjectStr.append("     _startTime = System.nanoTime();\n");
-        startInjectStr.append("""     _fullClassName   = "${ctClass.getName()}";"""+"\n");
-        startInjectStr.append("""     _className =  "${ctClass.getSimpleName()}.java";"""+"\n");
-        startInjectStr.append("""     _methodName = "${method.getName()}";"""+"\n");
-        startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
-        startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
-        if (enableOrder){
+        //startInjectStr.append("""     _fullClassName   = "${ctClass.getName()}";"""+"\n");
+        //startInjectStr.append("""     _className =  "${ctClass.getSimpleName()}.java";"""+"\n");
+        //startInjectStr.append("""     _methodName = "${method.getName()}";"""+"\n");
+        //startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
+        //startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
+        def _info = """"${ctClass.getName()}: ${method.getName()} (${ctClass.getSimpleName()}.java:${lineNumber})"""
+        println("_info is " + _info)
+        if (enableOrder) {
             startInjectStr.append("     android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
-            startInjectStr.append("     _info +\": ");
+            startInjectStr.append("     \"${_info}\" +\": ");
             for (int i = 0; i < paramNameList.size(); i++) {
                 startInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
             }
@@ -240,30 +242,31 @@ public class MyInject {
                 e.printStackTrace()
             }
         }
-        //  println("方法第一句插入了：" + startInjectStr.toString() + "语句")
+        println("方法第一句插入了：" + startInjectStr.toString() + "语句")
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
         endInjectStr.append("   _endTime = System.nanoTime();\n");
-        endInjectStr.append("   _cost = (_endTime - _startTime)*1.0f/1000000;\n");
-        endInjectStr.append("   _limit = _cost >= ${warringTime} ? \" 警告>=${warringTime}毫秒 \" : \"\" ;\n");
-
+        //endInjectStr.append("   _cost = (_endTime - _startTime)*1.0f/1000000;\n");
+        def _cost = """(_endTime - _startTime)*1.0f/1000000"""
+        //  endInjectStr.append("   _limit = ${_cost} >= ${warringTime} ? \" 警告>=${warringTime}毫秒 \" : \"\" ;\n");
+        def _limit = """${_cost} >= ${warringTime} ? " 警告>=${warringTime}毫秒 " : "" """
         if (limitTime > 0) {
-            endInjectStr.append("   if(${limitTime} <= _cost){");
+            endInjectStr.append("   if(${limitTime} <= ${_cost}){");
 
             endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
-            endInjectStr.append("_info + \": \" + _limit + \"\"");
-            endInjectStr.append("+_cost+\" (毫秒) return is \"+\$_ +\" ");
+            endInjectStr.append("${_info}\" + \": \" + (${_limit}) + \"\"");
+            endInjectStr.append("+${_cost}+\" (毫秒) return is \"+\$_ +\" ");
             for (int i = 0; i < paramNameList.size(); i++) {
                 endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
             }
             endInjectStr.append(" \"); ");
 
             endInjectStr.append("}");
-        }else {
+        } else {
             endInjectStr.append("   android.util.Log.${LogLevel}(\"${AppMethodTime}\",");
-            endInjectStr.append("_info + \": \" + _limit + \"\"");
-            endInjectStr.append("+_cost+\" (毫秒) return is \"+\$_ +\" ");
+            endInjectStr.append("${_info}\" + \": \" + (${_limit})+ \"\"");
+            endInjectStr.append("+${_cost}+\" (毫秒) return is \"+\$_ +\" ");
             for (int i = 0; i < paramNameList.size(); i++) {
                 endInjectStr.append(" <${paramNameList.get(i)}: \"+\$" + (i + 1) + "+\"> ");
             }
@@ -278,6 +281,7 @@ public class MyInject {
                 e.printStackTrace()
             }
         }
+        println("方法最后一句插入了：" + endInjectStr.toString())
         if (showLog) {
             //println(endInjectStr.toString())
             println("==================  InsertCostTimeCode End =======================\n")
