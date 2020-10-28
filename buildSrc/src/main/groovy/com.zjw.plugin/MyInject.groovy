@@ -225,7 +225,7 @@ public class MyInject {
         //startInjectStr.append("     _lineNumber = " + lineNumber + ";\n");
         //startInjectStr.append("     _info = _fullClassName+\": \"+_methodName + \" (\" + _className + \":\"+ _lineNumber + \")\";\n");
         def _info = """"${ctClass.getName()}: ${method.getName()} (${ctClass.getSimpleName()}.java:${lineNumber})"""
-        println("_info is " + _info)
+        //println("_info is " + _info)
         if (enableOrder) {
             startInjectStr.append("     android.util.Log.${LogLevel}(\"${AppMethodOrder}\",");
             startInjectStr.append("     \"${_info}\" +\": ");
@@ -242,7 +242,7 @@ public class MyInject {
                 e.printStackTrace()
             }
         }
-        println("方法第一句插入了：" + startInjectStr.toString() + "语句")
+        //println("方法第一句插入了：" + startInjectStr.toString() + "语句")
 
         //插入到函数最后一句
         StringBuilder endInjectStr = new StringBuilder();
@@ -281,7 +281,7 @@ public class MyInject {
                 e.printStackTrace()
             }
         }
-        println("方法最后一句插入了：" + endInjectStr.toString())
+        //println("方法最后一句插入了：" + endInjectStr.toString())
         if (showLog) {
             //println(endInjectStr.toString())
             println("==================  InsertCostTimeCode End =======================\n")
