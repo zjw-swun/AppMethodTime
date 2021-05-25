@@ -72,6 +72,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.7.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.customview:customview:1.1.0'
 
     testImplementation 'junit:junit:4.12'
     implementation 'org.javassist:javassist:3.20.0-GA'
